@@ -26,6 +26,9 @@ const sessionSchema = new Schema({
         ref: 'Staff',
         required: true
     },
+    timeWorkedToday: {
+        type: Number,
+    }
 });
 
 sessionSchema.methods.addToLeave = function(annualLeave) {      //Push id ngày nghỉ vào session

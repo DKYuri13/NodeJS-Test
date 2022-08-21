@@ -26,7 +26,7 @@
                                 <%= session.timeWorked %> giờ
                             <% } %>
                         </li>
-                        <li class="history_items">Tổng số giờ làm hôm nay + số giờ nghỉ; số giờ làm thêm</li>
+                        <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorked %> (Số giờ làm thêm: <%= session.overTime %>) </li>
                     <% } %>
                 </ul>
             </div>

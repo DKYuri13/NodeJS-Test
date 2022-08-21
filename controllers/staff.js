@@ -82,6 +82,7 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
         timeShort = 0;
         overTime = timeWorkedToday - 8;
     }
+    
     totalOverTime = totalOverTime + overTime;
     totalTimeShort = totalOverTime + timeShort;
 
@@ -100,6 +101,7 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
         {$set: {
             stopTime: stopTime,
             timeWorked: timeWorked,
+            timeWorkedToday: timeWorkedToday,
             overTime: overTime,
         }},
         {new: true, upsert: true},
