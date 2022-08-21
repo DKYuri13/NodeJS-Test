@@ -28,6 +28,9 @@ const sessionSchema = new Schema({
     },
     timeWorkedToday: {
         type: Number,
+    },
+    timeShort: {
+        type: Number,
     }
 });
 

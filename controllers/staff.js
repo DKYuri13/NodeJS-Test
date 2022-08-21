@@ -75,7 +75,6 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
         overTime = 0;
     } else {
         timeShort = timeShort - timeWorked;
-        timeWorkedToday = timeWorkedToday + timeWorked;
     };
 
     if(timeWorkedToday > 8) {
@@ -101,6 +100,7 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
         {$set: {
             stopTime: stopTime,
             timeWorked: timeWorked,
+            timeShort: timeShort,
             timeWorkedToday: timeWorkedToday,
             overTime: overTime,
         }},
