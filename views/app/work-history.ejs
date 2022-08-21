@@ -15,19 +15,17 @@
                         <p>Số giờ nghỉ: <%= annualLeave.annualLeaveHour %></p>
                     <% } %> </li>
                     <li class="history_items">Giờ bắt đầu làm: <%= session.startTime %></li>
-                    <% if (session.stopTime) { %>
-                        <li>Giờ kết thúc làm: Chưa kết thúc</li>
+                    <% if (session.stopTime == undefined) { %>
+                        <li>Giờ kết thúc làm:--</li>
                     <% } else { %>
                         <li class="history_items">Giờ kết thúc làm: <%= session.stopTime %></li>
-                        <li class="history_items">Tổng số giờ làm ca này: 
-                            <% if (session.stopTime == '') { %>
-                                Chưa kết thúc                       
-                            <% } else { %>
-                                <%= session.timeWorked %> giờ
-                            <% } %>
-                        </li>
+                        <% if (session.stopTime == undefined) { %>
+                            <li class="history_items">Tổng số giờ làm ca này: Chưa kết thúc</li>
+                        <% } else { %>
+                            <li class="history_items">Tổng số giờ làm ca này: <%= session.timeWorked.toFixed(1) %> giờ</li>
+                        <% } %>
                         <% if (session.timeWorked >= 8) { %>
-                            <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorked %> (Số giờ làm thêm: <%= session.overTime %>) </li>
+                            <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorked.toFixed(1) %> (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>) </li>
                         <% } else { %>
                             <li class="history_items">Tổng số giờ làm hôm nay: Chưa kết thúc </li>
                         <% } %>

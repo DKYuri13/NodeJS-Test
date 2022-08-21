@@ -73,14 +73,14 @@ staffSchema.methods.addToSession = function(status, session) {         //Thay đ
 staffSchema.methods.addTime = function(totalOverTime, totalTimeShort, status) {     //Thay đổi status và tính giờ làm thêm, giờ làm thiếu cả tháng
     this.status = status;
     if (this.timeShort) {
-        this.timeShort = (this.timeShort + totalTimeShort.toFixed(1));
+        this.timeShort = this.timeShort + totalTimeShort;
     } else {
-        this.timeShort = totalTimeShort.toFixed(1);
+        this.timeShort = totalTimeShort;
     }
     if (this.overTime) {
-        this.overTime = (this.overTime + totalOverTime).toFixed(1);
+        this.overTime = (this.overTime + totalOverTime);
     } else {
-        this.overTime = totalOverTime.toFixed(1);
+        this.overTime = totalOverTime;
     }
     return this.save();
 }
