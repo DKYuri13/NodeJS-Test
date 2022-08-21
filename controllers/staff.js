@@ -79,11 +79,11 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
     };
 
     if(timeWorkedToday > 8) {
-        timeShort = 0
+        timeShort = 0;
         overTime = timeWorkedToday - 8;
     }
     totalOverTime = totalOverTime + overTime;
-    totalTimeShort = totalOverTime = timeShort;
+    totalTimeShort = totalOverTime + timeShort;
 
     lastSessionDate = startHour.getDate();
     lastSessionMonth = startHour.getMonth();

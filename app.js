@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use((req, res, next) => {                       //Tìm staff (mặc định)
-    Staff.findById('62fcad2bbdc83c5b30f597ae')
+    Staff.findById('6301d5f6162a690a999804e9')
         .then(staff => {
             req.staff = staff;
             next();
