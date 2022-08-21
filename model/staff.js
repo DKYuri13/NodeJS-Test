@@ -87,11 +87,7 @@ staffSchema.methods.addTime = function(totalOverTime, totalTimeShort, status) { 
 
 staffSchema.methods.addToLeave = function(annualLeave) {     //Giảm số ngày nghỉ còn lại và push id ngày nghỉ vào staff
     this.annualLeave.push(annualLeave._id);
-    if(this.annualLeaveLeft == this.annualLeaveMax) {
-        this.annualLeaveLeft = (this.annualLeaveMax - (annualLeave.annualLeaveHour/8)).toFixed(1);
-    } else {
-        this.annualLeaveLeft = (this.annualLeaveLeft - (annualLeave.annualLeaveHour/8)).toFixed(1);
-    };
+    this.annualLeaveLeft = (this.annualLeaveLeft - (annualLeave.annualLeaveHour/8)).toFixed(1);
     return this.save();
 }
 

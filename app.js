@@ -45,7 +45,7 @@ mongoose
                     status: 'Resting',
                     imageUrl: 'https://180dc.org/wp-content/uploads/2022/04/Blank-Avatar.png',
                     annualLeaveMax: 12,
-                    annualLeaveleft: 12,
+                    annualLeaveLeft: 12,
                     timesheets: {
                         timesheet: {}
                     }
