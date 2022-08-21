@@ -254,3 +254,7 @@ form {
 .form-control textarea:focus {
   outline-color: #00695c;
 }
+
+.btn_centered {
+  margin: auto
+}

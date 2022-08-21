@@ -2,13 +2,14 @@ const Staff = require('../model/staff');
 const Session = require('../model/session');
 const AnnualLeave = require('../model/annualLeave');
 const Covid = require('../model/covid');
-const { findByIdAndUpdate } = require('../../node-first-app/models/product');
 
 let startHour;                      // Thời điểm bắt đầu làm của session ở global
 let timeWorkedToday = 0;            // Thời gian đã làm cả ngày
 let totalOverTime = 0;              // Tổng thời gian làm thêm cả tháng
 let timeShort = 0;                  // Thời gian làm thiếu của ngày hôm đó
 let totalTimeShort = 0;             // Tổng thời gian làm thiếu cả tháng
+let lastSessionDate;                // Ngày của session trước
+let lastSessionMonth;               // Tháng của session trước
 
 exports.getRollCall = (req, res, next) => {
         Staff.findOne().populate(['sessions']).populate(['annualLeave'])    //Trả về staff và session, annualLeave tương ứng với staff
@@ -84,12 +85,12 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
     totalOverTime = totalOverTime + overTime;
     totalTimeShort = totalOverTime = timeShort;
 
-    const lastSessionDate = startHour.getDate();
-    const lastSessionMonth = startHour.getMonth();
+    lastSessionDate = startHour.getDate();
+    lastSessionMonth = startHour.getMonth();
 
     const status = req.body.status;
 
-    req.staff.addTime(totalOverTiem, totalTimeShort, status);
+    req.staff.addTime(totalOverTime, totalTimeShort, status);
 
     const length = req.staff.sessions.length-1          //Lấy id của session cuối cùng được tạo mới
     const sessionId = req.staff.sessions[length]._id;
@@ -150,7 +151,6 @@ exports.getWorkHistory = (req, res, next) => {                          //Hiển
                 pageTitle: 'Work History',
                 path:'/work-history' 
             });
-            console.log(staff)
         })
         .catch(err => console.log(err))
 };
@@ -166,8 +166,11 @@ exports.postImageUrl = (req, res, next) => {
     const imageUrl = req.body.imageUrl;
     Staff.findOne().then(staff => {
         staff.imageUrl = imageUrl;
-        staff.save();
-        res.redirect('/information');
+        return staff.save()
+            .then(result => {
+                res.redirect('/information')
+            })
+            .catch(err => console.log(err));
     })
 }
 
