@@ -1,0 +1,21 @@
+.history {
+    list-style: none;
+    padding: 0;
+    margin: 5px;
+}
+
+.history_items {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+}
+
+.salary {
+    list-style: none;
+    padding: 0;
+    margin: 5px;
+}
+
+.salary_items {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+}

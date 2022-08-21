@@ -1,0 +1,29 @@
+<%- include('../includes/head.ejs') %> 
+<link rel="stylesheet" href="/css/covid.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %> 
+    <main>
+        <div>
+                <form action="/covid-temperature" method="POST" class="form form-control">                    <!-- Form thân nhiệt -->
+                    <input type="text" name="temperature" class="input" placeholder="Nhiệt độ">
+                    <input type="Date" name="date">
+                    <button class="btn" type="submit">Đăng ký thân nhiệt</button>
+                </form>
+                <form action="/covid-vaccine" method="POST" class="form form-control">                                    <!-- Form tiêm vaccine -->
+                    <input type="text" name="vaccineType1" class="input" placeholder="Loại vắc xin mũi 1">
+                    <input type="date" name="vaccineDate1" class="input">
+                    <input type="text" name="vaccineType2" class="input" placeholder="Loại vắc xin mũi 2">
+                    <input type="date" name="vaccineDate2" class="input">
+                    <button class="btn" type="submit">Đăng ký thông tin tiêm vaccine</button>
+                </form>
+                <form action="/covid-status" method="POST" class=" form form-control">                     <!-- Form tình trạng covid -->
+                    <select id="covidStatus">
+                        <option value="positive">Dương Tính</option>
+                        <option value="negative">Âm Tính</option>
+                    </select>
+                    <button class="btn" type="submit">Đăng ký tình trạng covid</button>
+                </form>
+        </div>
+    </main>
+    <%- include('../includes/end.ejs') %> 

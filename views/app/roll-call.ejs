@@ -1,0 +1,85 @@
+<%- include('../includes/head.ejs') %> 
+<link rel="stylesheet" href="/css/roll-call.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %> 
+    <main>
+        <div class="rollCall_btn_holder">                                                                   <!-- Button chọn giao diện checkin, checkout, nghỉ phép -->
+            <button id="startWorkBtn" class="btn rollCall_btn">Điểm danh</button>
+            <button id="stopWorkBtn" class="btn rollCall_btn">Kết thúc làm</button>
+            <button id="annualLeaveBtn" class="btn rollCall_btn">Nghỉ phép</button>
+        </div>
+
+        <div class="startWork modal">
+            <div class="rollCall_items">                <!-- Hiển thị checkin -->
+                <h2>Họ và tên: <%= staff.name %></h2>
+                <hr>
+                <p>Trạng thái: <%= staff.status %></p>
+
+                <% if (staff.status == 'Working') { %>              <!-- Validate Status -->
+                    <p>Bắt đầu làm việc: <%= staff.name %> 
+                        - Nơi làm: <%= staff.sessions[staff.sessions.length-1].workplace %>     <!-- [staff.sessions.length - 1] là index của session được tạo gần nhất -->
+                        - Thời gian bắt đầu: <%= staff.sessions[staff.sessions.length-1].startTime.toLocaleString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) %></p>
+                <% } else { %>
+
+                    <form action="/startWork" method="POST">            <!-- Form checkin -->
+                        <label for="workplace">Nơi làm việc</label>
+                        <select name="workplace" id="workplace">
+                            <option>Nhà</option>
+                            <option selected>Công Ty</option>
+                            <option>Khách Hàng</option>
+                        </select>
+                        <input type="hidden" name="status" value="Working">
+                            <button class="startWork btn btn_centered" type="submit">Điểm Danh</button>
+                    </form>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="stopWork modal">
+            <div class="rollCall_items">                <!-- Hiển thị checkout -->
+                <h2>Họ và tên: <%= staff.name %></h2><hr>         
+                <p>Số giờ đã làm hôm nay: <%= timeWorkedToday %></p>
+                <p>Danh sách các session:</p>
+
+                <% for (let session of staff.sessions) { %>
+                    <p>Bắt đầu: <%= session.startTime.toLocaleString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) %> 
+                        - Kết thúc: <%= session.stopTime ? session.stopTime.toLocaleString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) : 'Chưa kết thúc' %> 
+                        - Nơi làm: <%= session.workplace %></p>
+                <% } %>
+
+                <% if (staff.status == 'Resting') { %>      <!-- Validate Status -->
+                <% } else { %>
+                <form action="/endWork" method="POST">                                      <!-- Form checkout -->
+                    <input type="hidden" name="status" value="Resting">
+                    <button class="btn btn_centered" type="submit">Kết Thúc Làm</button>
+                </form>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="annualLeave modal">
+            <div class="rollCall_items">                                            <!-- Hiển thị xin nghỉ -->
+                <% if(staff.annualLeaveLeft == staff.annualLeaveMax) { %>
+                    <h2>Số ngày nghỉ còn lại: <%= staff.annualLeaveMax %> ngày</h2>
+                <% } else { %>    
+                    <h2>Số ngày nghỉ còn lại: <%= staff.annualLeaveLeft %> ngày</h2>
+                <% } %>
+                <hr>
+                <% if(staff.annualLeaveMax == 0) { %>
+                    <h1>Đã sử dụng hết ngày nghỉ!</h1>
+                <% } else { %>
+                <form action="/annualLeave" method="POST">          <!-- Form xin nghỉ -->
+                    <label>Ngày xin nghỉ:</label>
+                    <input type="date" name="annualLeaveDate"><br>
+                    <label>Lý do:</label>
+                    <input type="text" name="reason"><br>
+                    <label>Số giờ nghỉ:</label>
+                    <input type="number" name="annualLeaveHour" max="8" step=".01">
+                    <button class="btn btn_centered" type="submit">Xin Nghỉ</button>
+                </form>
+                <% } %>
+            </div>
+        </div>
+    </main>
+    <%- include('../includes/end.ejs') %> 

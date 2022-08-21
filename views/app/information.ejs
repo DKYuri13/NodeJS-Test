@@ -1,0 +1,37 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="\css\information.css">
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+
+        <main>
+            <div class="grid">
+                <div class="card">
+                    <div class="card__image">
+                        <div>
+                            <img src="<%= staff.imageUrl %> " alt="<%= staff.name %> ">
+                        </div>
+                        <div>
+                            <button class="btn btn_centered" id="editImage">Sửa ảnh</button>
+                            <div id="editImage_modal">
+                                <form action="/editImage" method="POST" class="form-control">                                <!-- Sửa ảnh -->
+                                    <input type="text" name="imageUrl" class="input" placeholder="Link ảnh">
+                                    <button class="btn btn_centered" type="submit" id="imageUrl">Nhập link</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card__content">
+                            <h1>ID: <%= staff._id.toString() %> </h1>
+                            <h2>Họ và tên: <%= staff.name %></h2>
+                            <p>Ngày sinh: <%= staff.doB.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) %> </p>
+                            <p>Hệ số lương: <%= staff.salaryScale %></p>
+                            <p>Ngày bắt đầu làm: <%= staff.startDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })%> </p>
+                            <p>Phòng: <%= staff.department %></p>
+                            <p>Ngày nghỉ: <%= staff.annualLeaveMax %></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <%- include('../includes/end.ejs') %>

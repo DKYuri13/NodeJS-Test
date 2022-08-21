@@ -1,0 +1,32 @@
+.startWork.modal {
+  display: block;
+}
+
+.stopWork.modal {
+  display: none;
+}
+
+.annualLeave.modal {
+  display: none;
+}
+  
+.rollCall_items {
+  margin-top: 10px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rollCall_btn_holder {
+  display: flex;
+  background: #00695c;
+}
+
+.rollCall_btn {
+  margin: 10px 10px;
+}
+
+.btn_centered {
+  margin: 10px auto;
+}
