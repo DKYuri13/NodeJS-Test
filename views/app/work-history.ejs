@@ -9,9 +9,9 @@
         <div class="card">
             <ul class="salary">
                 <li class="salary_items">Hệ số lương: <%= staff.salaryScale %> </li>
-                <li class="salary_items">Số giờ làm thêm: <%= staff.overTime %></li>
-                <li class="salary_items">Số giờ làm thiếu: <%= staff.timeShort %></li>
-                <li class="salary_items">Lương: <%= (staff.salaryScale*3000000+(staff.overTime - staff.timeShort)*200000) %> Đồng (Lương = salaryScale * 3000000 + (overTime - số giờ làm thiếu) * 200000)</li>
+                <li class="salary_items">Số giờ làm thêm: <%= staff.overTime.toFixed(1) %></li>
+                <li class="salary_items">Số giờ làm thiếu: <%= staff.timeShort.toFixed(1) %></li>
+                <li class="salary_items">Lương: <%= (staff.salaryScale*3000000+(staff.overTime - staff.timeShort)*200000).toFixed(0) %> Đồng (Lương = salaryScale * 3000000 + (overTime - số giờ làm thiếu) * 200000)</li>
             </ul>
         </div>
         <h1>Lịch sử làm việc:</h1>
