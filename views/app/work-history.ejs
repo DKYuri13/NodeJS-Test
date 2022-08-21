@@ -26,7 +26,11 @@
                                 <%= session.timeWorked %> giờ
                             <% } %>
                         </li>
-                        <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorked %> (Số giờ làm thêm: <%= session.overTime %>) </li>
+                        <% if (session.timeWorked >= 8) { %>
+                            <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorked %> (Số giờ làm thêm: <%= session.overTime %>) </li>
+                        <% } else { %>
+                            <li class="history_items">Tổng số giờ làm hôm nay: Chưa kết thúc </li>
+                        <% } %>
                     <% } %>
                 </ul>
             </div>
