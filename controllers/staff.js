@@ -150,6 +150,7 @@ exports.getWorkHistory = (req, res, next) => {                          //Hiển
         .then(staff => {
             res.render('app/work-history', {
                 staff: staff,
+                sessions: staff.sessions,
                 pageTitle: 'Work History',
                 path:'/work-history' 
             });
