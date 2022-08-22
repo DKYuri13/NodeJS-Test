@@ -36,12 +36,13 @@
                     <% } else { %>
                     <li class="history_items">Tổng số giờ làm ca này: <%= session.timeWorked.toFixed(1) %> giờ</li>
                     <% } %>
-
+                    <% if (session.timeWorked == Math.max(sessions.map(session => session.timeWorked))) { %> 
                     <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorkedToday.toFixed(1) %> 
                         (Số giờ làm thêm: <%= session.overTime %>, Số giờ thiếu: <%= session.timeShort %>) </li>
+                    <% } %> 
                     <li class="history_items">Tổng số giờ làm hôm nay: Chưa kết thúc </li>
                     <% } %>
-                    
+
                 </ul>
             </div>
         <% } %>
