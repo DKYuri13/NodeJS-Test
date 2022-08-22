@@ -31,6 +31,9 @@ const sessionSchema = new Schema({
     },
     timeShort: {
         type: Number,
+    },
+    lastSession: {
+        type: Boolean,
     }
 });
 

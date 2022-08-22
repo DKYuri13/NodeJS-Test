@@ -37,7 +37,7 @@
                     <li class="history_items">Tổng số giờ làm ca này: <%= session.timeWorked.toFixed(1) %> giờ</li>
                     <% } %>
                     <li class="history_items">Tổng số giờ làm hôm nay: <%= session.timeWorkedToday.toFixed(1) %> 
-                        (Số giờ làm thêm: <%= session.overTime %>, Số giờ thiếu: <%= session.timeShort %>) </li>
+                        (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>, Số giờ thiếu: <%= session.timeShort.toFixed(1) %>) </li>
                     <% } %>
 
                 </ul>
