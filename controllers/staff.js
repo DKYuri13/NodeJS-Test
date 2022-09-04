@@ -89,7 +89,7 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
     }
     
     totalOverTime = totalOverTime + overTime;
-    totalTimeShort = totalTimeShort + timeShort;
+    totalTimeShort = (8 * 21) - timeWorked - overTime;
 
     lastSessionDate = startHour.getDate();
     lastSessionMonth = startHour.getMonth();
