@@ -1,0 +1,31 @@
+<%- include('../includes/head.ejs') %> 
+    <link rel="stylesheet" href="/css/work-history.css">
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+    <%- include('../includes/navigation.ejs') %> 
+
+    <main>
+        <% if (staffs.length > 0) { %>
+            <div class="grid">
+                <% for (let staff of staffs) { %>
+                    <article class="card staff-item">
+                        <header class="card__header">
+                            <h1 class="staff__title">
+                                <%= staff.name %>
+                            </h1>
+                        </header>
+                        <div class="card__image">
+                            <img src="<%= staff.imageUrl %>" alt="<%= staff.name %>">
+                        </div>
+                        <div class="card__actions">
+                            <a href="/month-check/<%= staff._id %>" class="btn">Chi tiết</a>
+                        </div>
+                    </article>
+                    <% } %>
+            </div>
+            <% } else { %>
+                <h1>Không có nhân viên!</h1>
+            <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %> 

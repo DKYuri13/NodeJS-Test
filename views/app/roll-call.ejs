@@ -29,8 +29,9 @@
                             <option selected>Công Ty</option>
                             <option>Khách Hàng</option>
                         </select>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <input type="hidden" name="status" value="Working">
-                            <button class="startWork btn btn_centered" type="submit">Điểm Danh</button>
+                        <button class="startWork btn btn_centered" type="submit">Điểm Danh</button>
                     </form>
                 <% } %>
             </div>
@@ -52,6 +53,7 @@
                 <% } else { %>
                 <form action="/endWork" method="POST">                                      <!-- Form checkout -->
                     <input type="hidden" name="status" value="Resting">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn_centered" type="submit">Kết Thúc Làm</button>
                 </form>
                 <% } %>
@@ -76,6 +78,7 @@
                     <input type="text" name="reason"><br>
                     <label>Số giờ nghỉ:</label>
                     <input type="number" name="annualLeaveHour" max="8" step=".01">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn_centered" type="submit">Xin Nghỉ</button>
                 </form>
                 <% } %>

@@ -1,5 +1,6 @@
 <%- include('../includes/head.ejs') %> 
 <link rel="stylesheet" href="/css/covid.css">
+<link rel="stylesheet" href="/css/forms.css">
 </head>
 <body>
     <%- include('../includes/navigation.ejs') %> 
@@ -8,6 +9,7 @@
                 <form action="/covid-temperature" method="POST" class="form form-control">                    <!-- Form thân nhiệt -->
                     <input type="text" name="temperature" class="input" placeholder="Nhiệt độ">
                     <input type="Date" name="date">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn" type="submit">Đăng ký thân nhiệt</button>
                 </form>
                 <form action="/covid-vaccine" method="POST" class="form form-control">                                    <!-- Form tiêm vaccine -->
@@ -15,15 +17,39 @@
                     <input type="date" name="vaccineDate1" class="input">
                     <input type="text" name="vaccineType2" class="input" placeholder="Loại vắc xin mũi 2">
                     <input type="date" name="vaccineDate2" class="input">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn" type="submit">Đăng ký thông tin tiêm vaccine</button>
-                </form>
-                <form action="/covid-status" method="POST" class=" form form-control">                     <!-- Form tình trạng covid -->
-                    <select id="covidStatus">
-                        <option value="positive">Dương Tính</option>
-                        <option value="negative">Âm Tính</option>
-                    </select>
+                </form><br>
+                <form action="/covid-status" method="POST" class="form form-control">                     <!-- Form tình trạng covid -->
+                    <select name="covidStatus">
+                        <option value="Dương Tính">Dương Tính</option>
+                        <option value="Âm Tính">Âm Tính</option>
+                    </select><br>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn" type="submit">Đăng ký tình trạng covid</button>
                 </form>
         </div>
+        <hr>
+        <% if (user.isAdmin == true) { %>
+            <div>
+                <h1>Thông tin covid của nhân viên <a href="/covid-info/<%= user._id %>">(File PDF)</a></h1>
+                <% for (let staff of staffs) { %>
+                    <div>
+                        <h1><%= staff.name %></h1>
+                        <% for (let item of covid) { if(item.staffId.toString() == staff._id.toString()) { %>
+                            <h3>Tình trạng covid: <%= item.covidStatus %></h3>
+                            <h3>Vaccine</h3>
+                            <p>Vaccine mũi 1: <%= item.vaccineType1 %> - Ngày: <%= item.vaccineDate1 %></p>
+                            <p>Vaccine mũi 2: <%= item.vaccineType2 %> - Ngày: <%= item.vaccineDate2 %></p>
+                            <h3>Lịch sử thân nhiệt:</h3>
+                            <% for (let dailyItem of item.dailyInfo.items) { %> 
+                                <p>Ngày: <%= dailyItem.date %></p> 
+                                <p>Thân nhiệt: <%= dailyItem.temperature %></p>
+                            <% } %>
+                        <% }} %> 
+                    </div>
+                <% } %> 
+            </div>
+        <% } %>
     </main>
     <%- include('../includes/end.ejs') %> 

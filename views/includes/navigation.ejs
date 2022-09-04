@@ -3,6 +3,7 @@
         <button id="side-menu-toggle">Menu</button>
         <nav class="main-header__nav">
             <ul class="main-header__item-list">
+                <% if (isAuthenticated) { %>
                 <li class="main-header__item">
                     <a href="/" class="<%= path === '/' ? 'active' : '' %>">Điểm danh</a>
                 </li>
@@ -15,12 +16,34 @@
                 <li class="main-header__item">
                     <a href="/covid-info" class="<%= path === '/covid-info' ? 'active' : '' %>">Thông tin Covid</a>
                 </li>
+                <% if (isAdmin == true) { %>
+                <li class="main-header__item">
+                    <a href="/month-check" class="<%= path === '/month-check' ? 'active' : '' %>">Xác nhận giờ làm</a>
+                </li>
+                <% } %>
+                <% } %>
+            </ul>
+            <ul class="main-header__item-list">
+                <% if (!isAuthenticated) { %>
+                    <li class="main-header__item">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <a class="<%= path === '/login' ? 'active' : '' %>" href="/login">Đăng nhập</a>
+                    </li>
+                <% } else { %>
+                    <li class="main-header__item">
+                        <form action="/logout" method="post">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button type="submit">Đăng xuất</button>
+                        </form>
+                    </li>
+                <% } %>
             </ul>
         </nav>
     </header>
 
     <nav class="mobile-nav">
             <ul class="mobile-nav__item-list">
+                <% if (isAuthenticated) { %>
                 <li class="mobile-nav__item">
                     <a href="/" class="<%= path === '/' ? 'active' : '' %>">Điểm danh</a>
                 </li>
@@ -33,5 +56,24 @@
                 <li class="mobile-nav__item">
                     <a href="/covid-info" class="<%= path === '/covid-info' ? 'active' : '' %>">Thông tin Covid</a>
                 </li>
+                <% if (isAdmin == true) { %>
+                <li class="mobile-nav__item">
+                    <a href="/month-check" class="<%= path === '/month-check' ? 'active' : '' %>">Xác nhận giờ làm</a>
+                </li>
+                <% } %> 
+                <% } %>
+                <% if (!isAuthenticated) { %>
+                    <li class="mobile-nav__item">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <a class="<%= path === '/login' ? 'active' : '' %>" href="/login">Login</a>
+                    </li>
+                <% } else { %>
+                    <li class="mobile-nav__item">
+                        <form action="/logout" method="post">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                <% } %>
             </ul>
     </nav>

@@ -1,0 +1,27 @@
+.staff-form {
+    width: 20rem;
+    max-width: 90%;
+    margin: auto;
+    display: block;
+}
+
+.staff-item {
+    width: 20rem;
+    max-width: 95%;
+    margin: 1rem;
+}
+
+.staff__title {
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.staff__price {
+    text-align: center;
+    color: #4d4d4d;
+    margin-bottom: 0.5rem;
+}
+
+.staff__description {
+    text-align: center;
+}

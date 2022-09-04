@@ -1,7 +1,7 @@
-const Staff = require('../model/staff');
-const Session = require('../model/session');
-const AnnualLeave = require('../model/annualLeave');
-const Covid = require('../model/covid');
+const Staff = require('../models/staff');
+const WorkSession = require('../models/work-session');
+const AnnualLeave = require('../models/annualLeave');
+const Covid = require('../models/covid');
 
 let startHour;                      // Thời điểm bắt đầu làm của session ở global
 let timeWorkedToday = 0;            // Thời gian đã làm cả ngày
@@ -11,14 +11,18 @@ let totalTimeShort = 0;             // Tổng thời gian làm thiếu cả thá
 let lastSessionDate;                // Ngày của session trước
 let lastSessionMonth;               // Tháng của session trước
 
+let ITEMS_PER_PAGE = 20
+
 exports.getRollCall = (req, res, next) => {
-        Staff.findOne().populate(['sessions']).populate(['annualLeave'])    //Trả về staff và session, annualLeave tương ứng với staff
+        const isAdmin = req.staff.isAdmin;
+        Staff.findOne({username: req.staff.username}).populate(['sessions']).populate(['annualLeave'])    //Trả về staff và session, annualLeave tương ứng với staff
             .then(staff => {
                 res.render('app/roll-call', {
                     staff: staff,
                     pageTitle: 'Điểm Danh',
                     timeWorkedToday: timeWorkedToday.toFixed(2),
-                    path: '/'
+                    path: '/',
+                    isAdmin: isAdmin,
                 });
             })
             .catch(err => {
@@ -29,20 +33,22 @@ exports.getRollCall = (req, res, next) => {
 exports.postRollCall = (req, res, next) => {       //Post checkin
 
     const workplace = req.body.workplace;
-    const current = new Date;
+    const current = new Date();
+    const month = current.getMonth() + 1;
     let date = '';
-    date = date.concat('ngày ', current.getDate().toString(), ' tháng ', current.getMonth().toString(), ' năm ', current.getFullYear().toString());
+    date = date.concat('ngày ', current.getDate().toString(), ' tháng ', (current.getMonth() + 1).toString(), ' năm ', current.getFullYear().toString());
     const startTime = current;      //Thời gian bắt đầu làm của session ở block
     startHour = startTime;          // Thời điểm bắt đầu làm của session ở global
     const status = req.body.status;
 
-    const session = new Session({
+    const session = new WorkSession({
         workplace: workplace,
         date: date,
+        month: month,
         startTime: startTime,
+        timeWorkedToday: timeWorkedToday,
         staffId: req.staff
     })
-
     req.staff.addToSession(status, session);
     
     session
@@ -95,7 +101,7 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
     const length = req.staff.sessions.length-1          //Lấy id của session cuối cùng được tạo mới
     const sessionId = req.staff.sessions[length]._id;
 
-    Session.findByIdAndUpdate(
+    WorkSession.findByIdAndUpdate(
         sessionId,
         {$set: {
             stopTime: stopTime,
@@ -134,40 +140,135 @@ exports.postAnnualLeave = (req, res, next) => {     //Post xin nghỉ
 }
 
 exports.getInformation = (req, res, next) => {      //Hiển thị thông tin cá nhân
-    Staff.findOne().populate(['annualLeave'])
+    const isAdmin = req.staff.isAdmin;
+    Staff.findOne({username: req.staff.username}).populate(['annualLeave'])
         .then(staff => {
             res.render('app/information', {
                 staff: staff,
                 pageTitle: 'My Information',
-                path: '/information' 
+                path: '/information',
+                isAuthenticated: req.session.isLoggedIn,
+                isAdmin: isAdmin, 
             }); 
         })
         .catch(err => console.log(err));
 };
 
 exports.getWorkHistory = (req, res, next) => {                          //Hiển thị lịch sử làm việc
-    Staff.findOne().populate(['sessions']).populate(['annualLeave'])
+    const page = +req.query.page || 1;
+    const isAdmin = req.staff.isAdmin;
+    let totalItems;
+    WorkSession.find({
+        _id: {
+          $in: req.staff.sessions
+        }
+      }).countDocuments().then(numSessions => {
+        totalItems = numSessions;
+        return Staff.findOne({username: req.session.staff.username})
+                    .populate({path: 'sessions', 
+                        options: {
+                            skip: (page - 1)*ITEMS_PER_PAGE, 
+                            limit: ITEMS_PER_PAGE
+                        }})
+                    .populate(['annualLeave'])
+      })
         .then(staff => {
             res.render('app/work-history', {
                 staff: staff,
                 sessions: staff.sessions,
                 pageTitle: 'Work History',
-                path:'/work-history' 
+                path:'/work-history',
+                isAuthenticated: req.session.isLoggedIn,
+                isAdmin: isAdmin,
+                currentPage: page,
+                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                hasPreviousPage: page > 1,
+                nextPage: page + 1,
+                previousPage: page - 1,
+                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                line: ITEMS_PER_PAGE,
             });
         })
         .catch(err => console.log(err))
 };
 
-exports.getCovidInfo = (req, res, next) => {        //Hiển thị view covid
-            res.render('app/covid-info', {
-                pageTitle: 'Covid Information',
-                path:'/covid-info'
+exports.postWorkHistory = (req, res, next) => {
+    ITEMS_PER_PAGE = req.body.line;
+    const page = +req.query.page || 1;
+    const isAdmin = req.staff.isAdmin;
+    let totalItems;
+    WorkSession.find({
+        _id: {
+          $in: req.staff.sessions
+        }
+      }).countDocuments().then(numSessions => {
+        totalItems = numSessions;
+        return Staff.findOne({username: req.session.staff.username})
+                    .populate({path: 'sessions', 
+                        options: {
+                            skip: (page - 1)*ITEMS_PER_PAGE, 
+                            limit: ITEMS_PER_PAGE
+                        }})
+                    .populate(['annualLeave'])
+      })
+        .then(staff => {
+            res.render('app/work-history', {
+                staff: staff,
+                sessions: staff.sessions,
+                pageTitle: 'Work History',
+                path:'/work-history',
+                isAuthenticated: req.session.isLoggedIn,
+                isAdmin: isAdmin,
+                currentPage: page,
+                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                hasPreviousPage: page > 1,
+                nextPage: page + 1,
+                previousPage: page - 1,
+                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                line: ITEMS_PER_PAGE,
             });
+        })
+        .catch(err => console.log(err))
+}
+
+exports.getCovidInfo = (req, res, next) => {        //Hiển thị view covid
+    const isAdmin = req.staff.isAdmin;
+    Staff.find({
+        _id: {
+          $in: req.staff.staffs
+        }
+      }).then(staffs => {
+            let covidArr = [];
+            let findArr = [];
+            for (let staff of staffs) {
+                const covidId = staff.covid[0]
+                findArr.push(Covid.findById(covidId).then(covid => {
+                    const covidInc = covid;
+                    covidArr.push(covidInc);
+                }))
+            }
+            Promise.all(findArr).then(result => {
+                res.render('app/covid-info', {
+                    user: req.staff,
+                    isAmin: req.staff.isAdmin,
+                    staffs: staffs,
+                    covid: covidArr,
+                    pageTitle: 'Covid Information',
+                    path:'/covid-info',
+                    isAuthenticated: req.session.isLoggedIn,
+                    isAdmin: isAdmin
+                });
+            })
+        })
 };
 
-exports.postImageUrl = (req, res, next) => {
-    const imageUrl = req.body.imageUrl;
-    Staff.findOne().then(staff => {
+exports.postImage = (req, res, next) => {
+    const image = req.file;
+    console.log(req.file);
+
+    const imageUrl = image.path;
+
+    Staff.findOne({username: req.session.staff.username}).then(staff => {
         staff.imageUrl = imageUrl;
         return staff.save()
             .then(result => {
@@ -180,34 +281,13 @@ exports.postImageUrl = (req, res, next) => {
 exports.postCovidTemperature = (req, res, next) => {    //Post thân nhiệt
     const temperature = req.body.temperature;
     const date = req.body.date;
-    Covid.findOne().then(covid => {
-        if (covid == null) {
-            const covid = new Covid({
-                dailyInfo: {
-                    items: [
-                        {
-                            temperature: temperature,
-                            date: date
-                        }
-                    ]
-                },
-                staffId: req.staff
-            });
-            covid.save()
-                .then(result => {
-                    res.redirect('/covid-info')
-                })
-                .catch(err => console.log(err))
-        } else {
-            Covid.findOne().then(covid => {
-                covid.dailyInfo.items.push({
-                    temperature: temperature,
-                    date: date
-                });
-                covid.save();
-                res.redirect('/covid-info')
-            })
-        }
+    Covid.findOne({_id: req.staff.covid[0]._id}).then(covid => {
+        covid.dailyInfo.items.push({
+            temperature: temperature,
+            date: date
+        });
+        covid.save();
+        res.redirect('/covid-info')
     })
 }
 
@@ -216,52 +296,21 @@ exports.postCovidVaccine = (req, res, next) => {    //Post Vaccine
     const vaccineDate1 = req.body.vaccineDate1;
     const vaccineType2 = req.body.vaccineType2;
     const vaccineDate2 = req.body.vaccineDate2;
-    Covid.findOne().then(covid => {
-        if (covid == null) {
-            const covid = new Covid({
-                vaccineDate1: vaccineDate1,
-                vaccineType1: vaccineType1,
-                vaccineDate2: vaccineDate2,
-                vaccineType2: vaccineType2,
-                staffId: req.staff
-            });
-            covid.save()
-                .then(result => {
-                    res.redirect('/covid-info')
-                })
-                .catch(err => console.log(err))
-        } else {
-            Covid.findOne().then(covid => {
-                covid.vaccineDate1 = vaccineDate1;
-                covid.vaccineType1 = vaccineType1;
-                covid.vaccineDate2 = vaccineDate2;
-                covid.vaccineType2 = vaccineType2;
-                covid.save();
-                res.redirect('/covid-info')
-            })
-        }
+    Covid.findOne({_id: req.staff.covid[0]._id}).then(covid => {
+        covid.vaccineDate1 = vaccineDate1;
+        covid.vaccineType1 = vaccineType1;
+        covid.vaccineDate2 = vaccineDate2;
+        covid.vaccineType2 = vaccineType2;
+        covid.save();
+        res.redirect('/covid-info')
     })
 }
 
 exports.postCovidStatus = (req, res, next) => {    //Post Vaccine
     const covidStatus = req.body.covidStatus;
-    Covid.findOne().then(covid => {
-        if (covid == null) {
-            const covid = new Covid({
-                covidStatus: covidStatus,
-                staffId: req.staff
-            });
-            covid.save()
-                .then(result => {
-                    res.redirect('/covid-info')
-                })
-                .catch(err => console.log(err))
-        } else {
-            Covid.findOne().then(covid => {
-                covid.covidStatus = covidStatus;
-                covid.save();
-                res.redirect('/covid-info')
-            })
-        }
+    Covid.findOne({_id: req.staff.covid[0]._id}).then(covid => {
+        covid.covidStatus = covidStatus;
+        covid.save();
+        res.redirect('/covid-info')
     })
 }
