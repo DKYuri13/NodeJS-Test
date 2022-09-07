@@ -132,7 +132,8 @@ exports.getPdf = (req, res, next) => {
     }
   })
     .then(staffs => {
-      const staffId = req.params.staffId;
+      const staffId = req.params.userId;
+      console.log(staffId)
       const pdfName = 'covid-' + staffId + '.pdf';
       const covidPath = path.join('data', 'covidPDF', pdfName);
 
