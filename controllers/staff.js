@@ -47,7 +47,8 @@ exports.postRollCall = (req, res, next) => {       //Post checkin
         month: month,
         startTime: startTime,
         timeWorkedToday: timeWorkedToday,
-        staffId: req.staff
+        staffId: req.staff,
+        isApproved: false,
     })
     req.staff.addToSession(status, session);
     
