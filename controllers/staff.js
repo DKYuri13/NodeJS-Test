@@ -2,8 +2,9 @@ const Staff = require('../models/staff');
 const WorkSession = require('../models/work-session');
 const AnnualLeave = require('../models/annualLeave');
 const Covid = require('../models/covid');
+const session = require('express-session');
 
-let ITEMS_PER_PAGE = 20
+let ITEMS_PER_PAGE = 10
 
 exports.getRollCall = (req, res, next) => {                                                                 //HIỂN THỊ MÀN HÌNH ĐIỂM DANH
         Staff.findOne({username: req.staff.username}).populate(['sessions']).populate(['annualLeave'])    //Trả về staff và session, annualLeave tương ứng với staff
@@ -168,12 +169,8 @@ exports.getWorkHistory = (req, res, next) => {                          //HIỂN
         _id: {
           $in: req.staff.sessions                                       //Tìm các phiên làm việc của nhân viên
         }
-      }).then(sessions => {                                        //Đếm tổng số phiên làm việc và populate phiên làm việc hiển thị từng trang
-        let numItems = 0;
-        sessions.forEach(session => {
-            return numItems += 1;
-        })
-        totalItems = numItems;
+      }).countDocuments().then(numSessions => {                                        //Đếm tổng số phiên làm việc và populate phiên làm việc hiển thị từng trang
+        totalItems = numSessions;
         return Staff.findOne({username: req.session.staff.username})
                     .populate({path: 'sessions', 
                         options: {

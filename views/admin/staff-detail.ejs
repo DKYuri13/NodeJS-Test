@@ -33,7 +33,7 @@
                     <% if (session.month == month) { %> 
                     <div class="card">
                         <ul class="history">
-                            <li class="history_items">Ngày: <%= session.day %> tháng <%= session.month %> </li>
+                            <li style="font-weight:bold" class="history_items">Ngày: <%= session.day %> tháng <%= session.month %> </li>
                             <li class="history_items">Giờ nghỉ đã đăng ký: <% for (let annualLeave of staff.annualLeave) { %>
                                 <p>Ngày: <%= annualLeave.annualLeaveDate %></p>
                                 <p>Số giờ nghỉ: <%= annualLeave.annualLeaveHour %></p>
