@@ -35,7 +35,7 @@ exports.getStaff = (req, res, next) => {
     const isAdmin = req.staff.isAdmin;
     const staffId = req.params.staffId;
     const dayNow = new Date();
-    let month = dayNow.getMonth() + 1;
+    const month = dayNow.getMonth() + 1;
     Staff.findById(staffId).populate(['sessions']).populate(['annualLeave'])
       .then(staff => {
         res.render('admin/staff-detail', {
@@ -132,40 +132,45 @@ exports.getPdf = (req, res, next) => {
     }
   })
     .then(staffs => {
-      const staffId = req.params.userId;
-      console.log(staffId)
+      const staffId = req.params.staffId;
       const pdfName = 'covid-' + staffId + '.pdf';
       const covidPath = path.join('data', 'covidPDF', pdfName);
 
       const pdfDoc = new PDFDocument();
+      const fontPath = path.join('fonts', 'font-times-new-roman.ttf');
+
+      pdfDoc.registerFont('Times New Roman', fontPath);
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'inline; filename"' + pdfName + '"');
       pdfDoc.pipe(fs.createWriteStream(covidPath));
       pdfDoc.pipe(res);
 
-      pdfDoc.setEncoding('UTF-8').fontSize(26).text('Thông tin covid của các nhân viên');
+      pdfDoc.font('Times New Roman').fontSize(30).text('Thông tin covid của các nhân viên');
 
       pdfDoc.text('----------------------------');
-
+      let covidArr = [];
       staffs.forEach(staff => {
 
-        pdfDoc.fontSize(20).text(staff.name);
-        const covidId = staff.covid[0]
-        Covid.find({_id: covidId}).then(covid => {
-          console.log(covid[0].dailyInfo)
-          pdfDoc.text('Tình trạng covid: ' + covid[0].covidStatus);
+        const covidId = staff.toJSON().covid[0];
+
+        covidArr.push(Covid.find({_id: covidId}).then(covid => {
+          pdfDoc.fontSize(25).text(staff.name);
+
+          pdfDoc.fontSize(14).text('Tình trạng covid: ' + covid[0].covidStatus);
           pdfDoc.text('Lịch sử tiêm vaccine:');
           pdfDoc.text('Vaccine mũi 1: ' + covid[0].vaccineType1 + ' - Ngày: ' + covid[0].vaccineDate1);
           pdfDoc.text('Vaccine mũi 2: ' + covid[0].vaccineType2 + ' - Ngày: ' + covid[0].vaccineDate2);
           pdfDoc.fontSize(20).text('Lịch sử thân nhiệt:');
 
           covid[0].dailyInfo.items.forEach(item => {
-            pdfDoc.text('Ngày: ' + item.date);
+            pdfDoc.fontSize(14).text('Ngày: ' + item.date);
             pdfDoc.text('Thân nhiệt: ' + item.temperature);
           });
-          pdfDoc.end();
-        })
+        }))
+      });
+      Promise.all(covidArr).then(result => {
+        pdfDoc.end();
       })
-      
   });
 }

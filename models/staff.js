@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { schema } = require('./work-session');
 
 const Schema = mongoose.Schema;
 
@@ -31,9 +32,6 @@ const staffSchema = new Schema({
     department: {
         type: String
     },
-    timeWorkedToday: {
-        type: Number,
-    },
     sessions: [
         { 
             type: Schema.Types.ObjectId,
@@ -64,12 +62,6 @@ const staffSchema = new Schema({
     imageUrl: {
         type: String
     },
-    overTime: {
-        type: Number
-    },
-    timeShort: {
-        type: Number
-    },
     isAdmin: {
         type: Boolean,
         required: true
@@ -79,7 +71,11 @@ const staffSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'Staff',
         }
-    ]
+    ],
+    managerId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Staff',
+    }
 });
 
 staffSchema.methods.addToSession = function(status, session) {         //Thay đổi status và push id session vào staff
@@ -88,18 +84,8 @@ staffSchema.methods.addToSession = function(status, session) {         //Thay đ
     return this.save();
 }
 
-staffSchema.methods.addTime = function(totalOverTime, totalTimeShort, status) {     //Thay đổi status và tính giờ làm thêm, giờ làm thiếu cả tháng
+staffSchema.methods.changeStatus = function(status) {     //Thay đổi status và tính giờ làm thêm, giờ làm thiếu cả tháng
     this.status = status;
-    if (this.timeShort) {
-        this.timeShort = this.timeShort + totalTimeShort;
-    } else {
-        this.timeShort = totalTimeShort;
-    }
-    if (this.overTime) {
-        this.overTime = (this.overTime + totalOverTime);
-    } else {
-        this.overTime = totalOverTime;
-    }
     return this.save();
 }
 

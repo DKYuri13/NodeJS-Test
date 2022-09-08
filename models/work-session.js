@@ -2,23 +2,33 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const workSessionSchema = new Schema({
-    workplace: {
-        type: String,
+const workSessionSchema = new Schema({ 
+    month: {
+        type: Number,
     },
-    date: {
-        type: String,
+    day: {
+        type: Number,
     },
+    items: [
+        {
+            startTime: {
+                type: Date,
+            },
+            stopTime: {
+                type: Date,
+            },
+            workplace: {
+                type: String,
+            },
+            hours: {
+                type: Number,
+            }
+        },
+    ],
     overTime: {
-        type: Number
+        type: Number,
     },
-    startTime: {
-        type: Date,
-    },
-    stopTime: {
-        type: Date,
-    },
-    timeWorked: {
+    totalHrs: {
         type: Number,
     },
     staffId: {
@@ -26,26 +36,9 @@ const workSessionSchema = new Schema({
         ref: 'Staff',
         required: true
     },
-    timeWorkedToday: {
-        type: Number,
-    },
-    timeShort: {
-        type: Number,
-    },
-    lastSession: {
-        type: Boolean,
-    },
-    month: {
-        type: Number,
-    },
     isApproved: {
         type: Boolean,
     }
 });
-
-workSessionSchema.methods.addToLeave = function(annualLeave) {      //Push id ngày nghỉ vào session
-    this.annualLeave.push(annualLeave._id);
-    return this.save();
-}
 
 module.exports = mongoose.model('WorkSession', workSessionSchema);

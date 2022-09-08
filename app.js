@@ -69,6 +69,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.isAdmin = req.session.isAdmin;
     res.locals.csrfToken = req.csrfToken();
     next();
 })
@@ -85,5 +86,6 @@ mongoose
         app.listen(process.env.PORT || 8000, '0.0.0.0', () => {
             console.log("Server is running.");
         });
+        // app.listen(3000)
     })
     .catch(err => console.log(err));

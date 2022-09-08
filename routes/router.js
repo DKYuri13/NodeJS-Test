@@ -31,4 +31,6 @@ router.post('/editImage', isAuth, staffController.postImage);
 
 router.post('/work-history', isAuth, staffController.postWorkHistory);
 
+router.post('/work-history/:month', isAuth, staffController.postMonthWorkHistory);
+
 module.exports = router;

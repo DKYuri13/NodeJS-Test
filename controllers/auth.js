@@ -9,9 +9,20 @@ exports.getLogin = (req, res, next) => {
   } else {
     message = null;
   }
+
+  let previousPath;
+  const webPath = req.header('Referer').split('/')[2];                           //Lấy chuỗi tên web
+  
+  if (req.header('Referer')) {
+    previousPath = req.header('Referer').replace('http://' + webPath,'');
+  } else {
+    previousPath;
+  }
+
   res.render('auth/login', {
     path:'/login',
     pageTitle: 'Login',
+    previousPath: previousPath,
     errorMessage: message
   })
 }
@@ -19,6 +30,7 @@ exports.getLogin = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
+  const previousPath = req.body.previousPath;
   Staff.findOne({ username: username })
     .then(staff => {
       if (!staff) {
@@ -30,9 +42,10 @@ exports.postLogin = (req, res, next) => {
           if (doMatch) {
             req.session.isLoggedIn = true;
             req.session.staff = staff;
+            req.session.isAdmin = staff.isAdmin;
             return req.session.save(err => {
               console.log(err);
-              res.redirect('/');
+              res.redirect(previousPath || '/');
             });
           }
           req.flash('error', 'Invalid email or password.');
@@ -47,8 +60,9 @@ exports.postLogin = (req, res, next) => {
 }
 
 exports.postLogout = (req, res, next) => {
+  const path = req.header('Referer');
   req.session.destroy((err) => {
     console.log(err);
-    res.redirect('/');
+    res.redirect('/login');
   });
 }

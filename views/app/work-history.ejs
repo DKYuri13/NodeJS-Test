@@ -6,17 +6,43 @@
 
     <main>
         <h1>Tổng Kết:</h1>
+        <form action="/work-history/<%= month %>" method="POST">
+            <label style="font-weight:bold" for="month">Chọn tháng:</label>
+            <select class="form-select" name="month" id="month">
+                <option value="1" <%= month == 1 ? 'selected' : ''%>>Tháng 1</option>
+                <option value="2" <%= month == 2 ? 'selected' : ''%>>Tháng 2</option>
+                <option value="3" <%= month == 3 ? 'selected' : ''%>>Tháng 3</option>
+                <option value="4" <%= month == 4 ? 'selected' : ''%>>Tháng 4</option>
+                <option value="5" <%= month == 5 ? 'selected' : ''%>>Tháng 5</option>
+                <option value="6" <%= month == 6 ? 'selected' : ''%>>Tháng 6</option>
+                <option value="7" <%= month == 7 ? 'selected' : ''%>>Tháng 7</option>
+                <option value="8" <%= month == 8 ? 'selected' : ''%>>Tháng 8</option>
+                <option value="9" <%= month == 9 ? 'selected' : ''%>>Tháng 9</option>
+                <option value="10" <%= month == 10 ? 'selected' : ''%>>Tháng 10</option>
+                <option value="11" <%= month == 11 ? 'selected' : ''%>>Tháng 11</option>
+                <option value="12" <%= month == 12 ? 'selected' : ''%>>Tháng 12</option>
+            </select>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn" type="submit">Chọn</button>
+        </form>
         <div class="card">
             <ul class="salary">
+                <% if (staff.managerId) { %> 
+                    <li class="salary_items">Thông tin quản lý: </li>
+                    <li class="salary_items">- ID: <%= staff.managerId %> </li>
+                    <li class="salary_items">- Tên: <%= managerName %> </li>
+                <% } else { %>
+                    <li class="salary_items">Thông tin quản lý: Không có quản lý</li>
+                <% } %> 
                 <li class="salary_items">Hệ số lương: <%= staff.salaryScale %> </li>
-                <li class="salary_items">Số giờ làm thêm: <%= staff.overTime.toFixed(1) %></li>
-                <li class="salary_items">Số giờ làm thiếu: <%= staff.timeShort.toFixed(1) %></li>
-                <li class="salary_items">Lương: <%= (staff.salaryScale*3000000+(staff.overTime - staff.timeShort)*200000).toFixed(0) %> Đồng (Lương = salaryScale * 3000000 + (overTime - số giờ làm thiếu) * 200000)</li>
+                <li class="salary_items">Số giờ làm thêm: <%= overTimeMonth.toFixed(1) %></li>
+                <li class="salary_items">Số giờ làm thiếu: <%= totalTimeShort.toFixed(1) %></li>
+                <li class="salary_items">Lương: <%= (staff.salaryScale*3000000+((overTimeMonth - totalTimeShort)*200000)) %> đồng (Lương = salaryScale * 3000000 + (overTime - số giờ làm thiếu) * 200000)</li>
             </ul>
         </div>
         <h1>Lịch sử làm việc:</h1>
         <form action="/work-history" method="POST">
-            <label style="font-weight:bold">Số phiên làm việc hiển thị từng trang:</label>
+            <label style="font-weight:bold" for="line">Số phiên làm việc hiển thị từng trang:</label>
             <select name="line">
                 <option value="20" <% if (line == 20) { %>selected<% } %>>20</option>
                 <option value="30" <% if (line == 30) { %>selected<% } %>>30</option>
@@ -28,28 +54,27 @@
         <% for (let session of staff.sessions) { %>
             <div class="card">
                 <ul class="history">
-                    <li class="history_items">Ngày: <%= session.date %></li>
-                    <li class="history_items">Nơi làm việc: <%= session.workplace %> </li>
+                    <li class="history_items">Ngày: <%= session.day %> tháng <%= session.month %></li>
                     <li class="history_items">Giờ nghỉ đã đăng ký: <% for (let annualLeave of staff.annualLeave) { %>
                         <p>Ngày: <%= annualLeave.annualLeaveDate %></p>
                         <p>Số giờ nghỉ: <%= annualLeave.annualLeaveHour %></p>
                     <% } %> </li>
-                    <li class="history_items">Giờ bắt đầu làm: <%= session.startTime %></li>
-
-                    <% if (session.stopTime == undefined) { %>
-                    <li>Giờ kết thúc làm:--</li>
-                    <% } else { %>
-                    <li class="history_items">Giờ kết thúc làm: <%= session.stopTime %></li>
-
-                    <% if (session.stopTime == undefined) { %>
-                    <li class="history_items">Tổng số giờ làm ca này: Chưa kết thúc</li>
-                    <% } else { %>
-                    <li class="history_items">Tổng số giờ làm ca này: <%= session.timeWorked.toFixed(1) %> giờ</li>
+                    <% for (item of session.items) { %>
+                        <li class="history_items">Nơi làm việc: <%= item.workplace %> </li>
+                        <li class="history_items">Giờ bắt đầu làm: <%= item.startTime %></li>
+                        <% if (!item.stopTime) { %>
+                            <li class="history_items">Giờ kết thúc làm: Chưa kết thúc</li><hr>
+                        <% } else { %>
+                            <li class="history_items">Giờ kết thúc làm: <%= item.stopTime %></li>
+                            <li class="history_items">Tổng số giờ làm ca này: <%= item.hours.toFixed(1) %> giờ</li><hr>
                     <% } %>
-                    <li class="history_items">Tổng số giờ làm cả ngày: <%= session.timeWorkedToday.toFixed(1) %> 
-                        (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>, Số giờ thiếu: <%= session.timeShort.toFixed(1) %>) </li>
                     <% } %>
-                </ul>
+                    <% if (session.items[session.items.length-1].stopTime) { %> 
+                        <li class="history_items">Tổng số giờ làm cả ngày: <%= session.totalHrs.toFixed(1) %> 
+                            (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>  , Số giờ thiếu: <%= (8 - session.totalHrs).toFixed(1) %> ) </li>
+                    <% } else { %>
+                        <li class="history_items">Tổng số giờ làm cả ngày: Chưa kết thúc</li> 
+                    <% } %> 
             </div>
         <% } %>
         <section class="pagination">

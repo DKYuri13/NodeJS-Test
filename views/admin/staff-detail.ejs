@@ -1,7 +1,5 @@
 <%- include('../includes/head.ejs') %>
 <link rel="stylesheet" href="/css/work-history.css">
-<script src="https://jsuites.net/v4/jsuites.js"></script>
-<link rel="stylesheet" href="https://jsuites.net/v4/jsuites.css" type="text/css" />
     </head>
 
     <body>
@@ -10,7 +8,8 @@
             <div>
                 <h1><%= staff.name %></h1>
                 <form action="/month-check/<%= staff._id %>" method="POST">
-                    <input name="month" type="month" value="<%= month %>">
+                    <label for="month">Chọn tháng:</label>
+                    <input name="month" type="month">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit">Chọn</button>
                 </form>
@@ -18,30 +17,26 @@
             <hr>
             <% if (staff.sessions.length > 0) { %> 
                 <% for (let session of staff.sessions) { %>
-                    <% if ((session.startTime.getMonth() + 1) == month) { %> 
+                    <% if (session.month == month) { %> 
                     <div class="card">
                         <ul class="history">
-                            <li class="history_items">Ngày: <%= session.date %></li>
-                            <li class="history_items">Nơi làm việc: <%= session.workplace %> </li>
+                            <li class="history_items">Ngày: <%= session.day %> tháng <%= session.month %> </li>
                             <li class="history_items">Giờ nghỉ đã đăng ký: <% for (let annualLeave of staff.annualLeave) { %>
                                 <p>Ngày: <%= annualLeave.annualLeaveDate %></p>
                                 <p>Số giờ nghỉ: <%= annualLeave.annualLeaveHour %></p>
                             <% } %> </li>
-                            <li class="history_items">Giờ bắt đầu làm: <%= session.startTime %></li>
-        
-                            <% if (session.stopTime == undefined) { %>
-                            <li class="history_items">Giờ kết thúc làm: --</li>
-                            <% } else { %>
-                            <li class="history_items">Giờ kết thúc làm: <%= session.stopTime %></li>
-                            <% } %> 
-                            <% if (session.stopTime == undefined) { %>
-                            <li class="history_items">Tổng số giờ làm ca này: Chưa kết thúc</li>
-                            <li class="history_items">Tổng số giờ làm cả ngày: <%= session.timeWorkedToday.toFixed(1) %> 
-                                (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>, Số giờ thiếu: <%= session.timeShort.toFixed(1) %>) </li>
-                            <% } else { %>
-                            <li class="history_items">Tổng số giờ làm ca này: <%= session.timeWorked.toFixed(1) %> giờ</li>
-                            <li class="history_items">Tổng số giờ làm cả ngày: <%= session.timeWorkedToday.toFixed(1) %> 
-                                (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>, Số giờ thiếu: <%= session.timeShort.toFixed(1) %>) </li>
+                            <% for (let item of session.items) { %>
+                                <li class="history_items">Nơi làm việc: <%= item.workplace %> </li>
+                                <li class="history_items">Giờ bắt đầu làm: <%= item.startTime %></li>
+                                <% if (!item.stopTime) { %>
+                                    <li class="history_items">Giờ kết thúc làm: Chưa kết thúc</li>
+                                <% } else { %>
+                                    <li class="history_items">Giờ kết thúc làm: <%= item.stopTime %></li>
+                                    <li class="history_items">Tổng số giờ làm ca này: <%= item.hours.toFixed(1) %> giờ</li>
+                                <% } %>
+                            <% } %>  
+                            <li class="history_items">Tổng số giờ làm cả ngày: 
+                                (Số giờ làm thêm: , Số giờ thiếu: ) </li>
                             <% if (session.isApproved == false) { %> 
                             <form action="/delete-work-session" method="POST">
                                 <input type="hidden" value="<%= session._id %>" name="workSessionId">
@@ -51,16 +46,15 @@
                             <% } %> 
                             <% } %>
                         </ul>
-                        <% } %> 
                     </div>
-                <% } %>
-                <% if (month == (dayNow.getMonth() + 1)) { %> 
+                <% } %> 
+            <% } %>
+            <% if (month == (dayNow.getMonth() + 1)) { %> 
                 <form action="/confirm" method="POST">
                     <input type="hidden" name="staffId" value="<%= staff._id %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="confirm-btn" type="submit">Xác nhận giờ làm</button>
                 </form>
-                <% } %>
             <% } %> 
         </main>
 <%- include('../includes/end.ejs') %>

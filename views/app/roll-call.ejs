@@ -1,5 +1,6 @@
 <%- include('../includes/head.ejs') %> 
 <link rel="stylesheet" href="/css/roll-call.css">
+<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 </head>
 <body>
     <%- include('../includes/navigation.ejs') %> 
@@ -18,8 +19,8 @@
 
                 <% if (staff.status == 'Working') { %>              <!-- Validate Status -->
                     <p>Bắt đầu làm việc: <%= staff.name %> 
-                        - Nơi làm: <%= staff.sessions[staff.sessions.length-1].workplace %>     <!-- [staff.sessions.length - 1] là index của session được tạo gần nhất -->
-                        - Thời gian bắt đầu: <%= staff.sessions[staff.sessions.length-1].startTime.toLocaleString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) %></p>
+                        - Nơi làm: <%= workSessions[workSessions.length-1].items[workSessions[workSessions.length-1].items.length-1].workplace %>
+                        - Thời gian bắt đầu: <%= workSessions[workSessions.length-1].items[workSessions[workSessions.length-1].items.length-1].startTime %></p>
                 <% } else { %>
 
                     <form action="/startWork" method="POST">            <!-- Form checkin -->
@@ -40,13 +41,15 @@
         <div class="stopWork modal">
             <div class="rollCall_items">                <!-- Hiển thị checkout -->
                 <h2>Họ và tên: <%= staff.name %></h2><hr>         
-                <p>Số giờ đã làm hôm nay: <%= timeWorkedToday %></p>
+                <p>Số giờ đã làm hôm nay:</p>
                 <p>Danh sách các session:</p>
 
                 <% for (let session of staff.sessions) { %>
-                    <p>Bắt đầu: <%= session.startTime.toLocaleString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) %> 
-                        - Kết thúc: <%= session.stopTime ? session.stopTime.toLocaleString('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }) : 'Chưa kết thúc' %> 
-                        - Nơi làm: <%= session.workplace %></p>
+                    <% for (let item of session.items) { %> 
+                        <p>Bắt đầu: <%= item.startTime %> 
+                            - Kết thúc: <%= item.stopTime ? item.stopTime : 'Chưa kết thúc' %> 
+                            - Nơi làm: <%= item.workplace %></p>
+                    <% } %> 
                 <% } %>
 
                 <% if (staff.status == 'Resting') { %>      <!-- Validate Status -->
@@ -73,7 +76,7 @@
                 <% } else { %>
                 <form action="/annualLeave" method="POST">          <!-- Form xin nghỉ -->
                     <label>Ngày xin nghỉ:</label>
-                    <input type="date" name="annualLeaveDate"><br>
+                    <input name="annualLeaveDate" id="datePick"><br>
                     <label>Lý do:</label>
                     <input type="text" name="reason"><br>
                     <label>Số giờ nghỉ:</label>
@@ -85,4 +88,12 @@
             </div>
         </div>
     </main>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/dubrox/Multiple-Dates-Picker-for-jQuery-UI@master/jquery-ui.multidatespicker.js"></script>
+    <script>
+        $(document).ready(function () {
+          $('#datePick').multiDatesPicker();
+        });
+    </script>
     <%- include('../includes/end.ejs') %> 

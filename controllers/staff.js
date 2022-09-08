@@ -3,26 +3,16 @@ const WorkSession = require('../models/work-session');
 const AnnualLeave = require('../models/annualLeave');
 const Covid = require('../models/covid');
 
-let startHour;                      // Thời điểm bắt đầu làm của session ở global
-let timeWorkedToday = 0;            // Thời gian đã làm cả ngày
-let totalOverTime = 0;              // Tổng thời gian làm thêm cả tháng
-let timeShort = 0;                  // Thời gian làm thiếu của ngày hôm đó
-let totalTimeShort = 0;             // Tổng thời gian làm thiếu cả tháng
-let lastSessionDate;                // Ngày của session trước
-let lastSessionMonth;               // Tháng của session trước
-
 let ITEMS_PER_PAGE = 20
 
 exports.getRollCall = (req, res, next) => {
-        const isAdmin = req.staff.isAdmin;
         Staff.findOne({username: req.staff.username}).populate(['sessions']).populate(['annualLeave'])    //Trả về staff và session, annualLeave tương ứng với staff
             .then(staff => {
                 res.render('app/roll-call', {
                     staff: staff,
+                    workSessions: staff.sessions,
                     pageTitle: 'Điểm Danh',
-                    timeWorkedToday: timeWorkedToday.toFixed(2),
                     path: '/',
-                    isAdmin: isAdmin,
                 });
             })
             .catch(err => {
@@ -35,87 +25,102 @@ exports.postRollCall = (req, res, next) => {       //Post checkin
     const workplace = req.body.workplace;
     const current = new Date();
     const month = current.getMonth() + 1;
-    let date = '';
-    date = date.concat('ngày ', current.getDate().toString(), ' tháng ', (current.getMonth() + 1).toString(), ' năm ', current.getFullYear().toString());
-    const startTime = current;      //Thời gian bắt đầu làm của session ở block
-    startHour = startTime;          // Thời điểm bắt đầu làm của session ở global
+    const day = current.getDate();
+    const startTime = current;
     const status = req.body.status;
+    const length = req.staff.sessions.length - 1;                 // Index của work session mới nhất
 
-    const session = new WorkSession({
-        workplace: workplace,
-        date: date,
-        month: month,
-        startTime: startTime,
-        timeWorkedToday: timeWorkedToday,
-        staffId: req.staff,
-        isApproved: false,
-    })
-    req.staff.addToSession(status, session);
-    
-    session
-        .save()
-        .then(result => {
-            res.redirect('/')
+    WorkSession.findById(req.staff.sessions[length])
+        .then(session => {
+            if (session !== null) {                               // Check xem có work session chưa
+                if (session.day == day) {                         // Check xem work session đã sang ngày mới chưa
+                    session.items.push({                          // Push vào work session gần đây nhất
+                        startTime: startTime,
+                        workplace: workplace,
+                    })
+                    req.staff.changeStatus(status);
+                    session.save()
+                        .then(result => {
+                            res.redirect('/')
+                        })
+                        .catch(err => console.log(err));
+                } else {
+                    const session = new WorkSession({             // Tạo mới khi đã sang ngày mới
+                        day: day,
+                        month: month,
+                        items: [
+                            {
+                                startTime: startTime,
+                                workplace: workplace,
+                            }
+                        ],
+                        totalHrs: 0,
+                        overTime: 0,
+                        staffId: req.staff,
+                        isApproved: false,
+                    })
+                    req.staff.addToSession(status, session);
+                    session.save()
+                        .then(result => {
+                            res.redirect('/')
+                        })
+                        .catch(err => console.log(err));
+                }
+            } else {
+                const session = new WorkSession({                  // Tạo mới khi chưa có work session
+                    day: day,
+                    month: month,
+                    items: [
+                        {
+                            startTime: startTime,
+                            workplace: workplace,
+                        }
+                    ],
+                    totalHrs: 0,
+                    overTime: 0,
+                    staffId: req.staff,
+                    isApproved: false,
+                })
+                req.staff.addToSession(status, session);
+                session.save()
+                    .then(result => {
+                        res.redirect('/')
+                    })
+                    .catch(err => console.log(err));
+            }
         })
-        .catch(err => console.log(err))
+        .catch(err => console.log(err))   
 };
 
 exports.postStopWork = (req, res, next) => {        //Post checkout
 
     const current = new Date;
     const stopTime = current;
-    let overTime = 0;
-
-    const timeWorked = (stopTime.getTime() - startHour.getTime())/3600000; // Thời gian đã làm của session. Chia cho 3600000 để đổi từ MILI GIÂY thành GIỜ
-
-    const today = current.getDate();
-    const month = current.getMonth();
-
-    if(month !== lastSessionMonth) {
-        totalOverTime = 0;
-        totalTimeShort = 0;
-    };
-
-    if(today !== lastSessionDate) {
-        timeWorkedToday = timeWorked;
-        timeShort = 8 - timeWorked;
-        overTime = 0;
-    } else {
-        timeShort = timeShort - timeWorked;
-    };
-
-    if(timeWorkedToday > 8) {
-        timeShort = 0;
-        overTime = timeWorkedToday - 8;
-    }
-    
-    totalOverTime = totalOverTime + overTime;
-    totalTimeShort = (8 * 21) - timeWorked - overTime;
-
-    lastSessionDate = startHour.getDate();
-    lastSessionMonth = startHour.getMonth();
 
     const status = req.body.status;
 
-    req.staff.addTime(totalOverTime, totalTimeShort, status);
+    req.staff.changeStatus(status);
 
-    const length = req.staff.sessions.length-1          //Lấy id của session cuối cùng được tạo mới
-    const sessionId = req.staff.sessions[length]._id;
+    const length = req.staff.sessions.length - 1;          //Index của session cuối cùng được tạo mới
+    const sessionId = req.staff.sessions[length];          //Lấy ID
 
-    WorkSession.findByIdAndUpdate(
-        sessionId,
-        {$set: {
-            stopTime: stopTime,
-            timeWorked: timeWorked,
-            timeShort: timeShort,
-            timeWorkedToday: timeWorkedToday,
-            overTime: overTime,
-        }},
-        {new: true, upsert: true},
-        function (err) {
-            if(err) throw err;
-        });
-    res.redirect('/');
+    WorkSession.findById(sessionId).then(session => {
+        const itemsLength = session.items.length - 1;
+        const hours = (stopTime.getTime() - session.items[itemsLength].startTime.getTime())/3600000;
+        session.items[itemsLength].stopTime = stopTime;
+        session.items[itemsLength].hours = hours;
+        session.totalHrs += hours;
+
+        if (session.totalHrs >= 8) {
+            session.overTime = session.totalHrs - 8;
+        }
+
+        session.save()
+            .then(result => {
+                res.redirect('/');
+            })
+            .catch(err => console.log(err));
+    });
 }
 
 exports.postAnnualLeave = (req, res, next) => {     //Post xin nghỉ
@@ -141,15 +146,12 @@ exports.postAnnualLeave = (req, res, next) => {     //Post xin nghỉ
 }
 
 exports.getInformation = (req, res, next) => {      //Hiển thị thông tin cá nhân
-    const isAdmin = req.staff.isAdmin;
     Staff.findOne({username: req.staff.username}).populate(['annualLeave'])
         .then(staff => {
             res.render('app/information', {
                 staff: staff,
                 pageTitle: 'My Information',
                 path: '/information',
-                isAuthenticated: req.session.isLoggedIn,
-                isAdmin: isAdmin, 
             }); 
         })
         .catch(err => console.log(err));
@@ -157,7 +159,8 @@ exports.getInformation = (req, res, next) => {      //Hiển thị thông tin c�
 
 exports.getWorkHistory = (req, res, next) => {                          //Hiển thị lịch sử làm việc
     const page = +req.query.page || 1;
-    const isAdmin = req.staff.isAdmin;
+    const dayNow = new Date();
+    const month = dayNow.getMonth() + 1;
     let totalItems;
     WorkSession.find({
         _id: {
@@ -174,29 +177,82 @@ exports.getWorkHistory = (req, res, next) => {                          //Hiển
                     .populate(['annualLeave'])
       })
         .then(staff => {
-            res.render('app/work-history', {
-                staff: staff,
-                sessions: staff.sessions,
-                pageTitle: 'Work History',
-                path:'/work-history',
-                isAuthenticated: req.session.isLoggedIn,
-                isAdmin: isAdmin,
-                currentPage: page,
-                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                hasPreviousPage: page > 1,
-                nextPage: page + 1,
-                previousPage: page - 1,
-                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                line: ITEMS_PER_PAGE,
-            });
+            Staff.findOne({_id: staff.managerId})
+                .then(result => {
+                    if(result !== null) {
+                        const managerName = result.toJSON().name;
+                        let totalHrsMonth = 0;
+                        let overTimeMonth = 0;
+                        let totalTimeShort = 0;
+                        staff.sessions.forEach(session => {
+                            if(session.month == month) {
+                                if (session.totalHrs < 8) {
+                                    totalTimeShort += (8 - session.totalHrs);
+                                }
+                                totalHrsMonth += session.totalHrs;
+                                overTimeMonth += session.overTime;
+                            }
+                        })
+                        res.render('app/work-history', {
+                            staff: staff,
+                            sessions: staff.sessions,
+                            pageTitle: 'Work History',
+                            path:'/work-history',
+                            isAuthenticated: req.session.isLoggedIn,
+                            month: month,
+                            totalHrsMonth: totalHrsMonth,
+                            overTimeMonth: overTimeMonth,
+                            totalTimeShort: totalTimeShort,
+                            managerName: managerName,
+                            currentPage: page,
+                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page - 1,
+                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                            line: ITEMS_PER_PAGE,
+                        });
+                    } else {
+                        let totalHrsMonth = 0;
+                        let overTimeMonth = 0;
+                        let totalTimeShort = 0;
+                        staff.sessions.forEach(session => {
+                            if(session.month == month) {
+                                if (session.totalHrs < 8) {
+                                    totalTimeShort += (8 - session.totalHrs);
+                                }
+                                totalHrsMonth += session.totalHrs;
+                                overTimeMonth += session.overTime;
+                            }
+                        })
+                        res.render('app/work-history', {
+                            staff: staff,
+                            sessions: staff.sessions,
+                            pageTitle: 'Work History',
+                            path:'/work-history',
+                            isAuthenticated: req.session.isLoggedIn,
+                            month: month,
+                            totalHrsMonth: totalHrsMonth,
+                            overTimeMonth: overTimeMonth,
+                            totalTimeShort: totalTimeShort,
+                            currentPage: page,
+                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page - 1,
+                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                            line: ITEMS_PER_PAGE,
+                        });
+                    }
+                })
+                .catch(err => console.log(err))
         })
         .catch(err => console.log(err))
 };
 
-exports.postWorkHistory = (req, res, next) => {
-    ITEMS_PER_PAGE = req.body.line;
+exports.postMonthWorkHistory = (req, res, next) => {
     const page = +req.query.page || 1;
-    const isAdmin = req.staff.isAdmin;
+    const month = req.body.month;
     let totalItems;
     WorkSession.find({
         _id: {
@@ -213,27 +269,174 @@ exports.postWorkHistory = (req, res, next) => {
                     .populate(['annualLeave'])
       })
         .then(staff => {
-            res.render('app/work-history', {
-                staff: staff,
-                sessions: staff.sessions,
-                pageTitle: 'Work History',
-                path:'/work-history',
-                isAuthenticated: req.session.isLoggedIn,
-                isAdmin: isAdmin,
-                currentPage: page,
-                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                hasPreviousPage: page > 1,
-                nextPage: page + 1,
-                previousPage: page - 1,
-                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                line: ITEMS_PER_PAGE,
-            });
+            Staff.findOne({_id: staff.managerId})
+                .then(result => {
+                    if(result !== null) {
+                        const managerName = result.toJSON().name;
+                        let totalHrsMonth = 0;
+                        let overTimeMonth = 0;
+                        let totalTimeShort = 0;
+                        staff.sessions.forEach(session => {
+                            if(session.month == month) {
+                                if (session.totalHrs < 8) {
+                                    totalTimeShort += (8 - session.totalHrs);
+                                }
+                                totalHrsMonth += session.totalHrs;
+                                overTimeMonth += session.overTime;
+                            }
+                        })
+                        res.render('app/work-history', {
+                            staff: staff,
+                            sessions: staff.sessions,
+                            pageTitle: 'Work History',
+                            path:'/work-history',
+                            isAuthenticated: req.session.isLoggedIn,
+                            month: month,
+                            totalHrsMonth: totalHrsMonth,
+                            overTimeMonth: overTimeMonth,
+                            totalTimeShort: totalTimeShort,
+                            managerName: managerName,
+                            currentPage: page,
+                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page - 1,
+                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                            line: ITEMS_PER_PAGE,
+                        });
+                    } else {
+                        let totalHrsMonth = 0;
+                        let overTimeMonth = 0;
+                        let totalTimeShort = 0;
+                        staff.sessions.forEach(session => {
+                            if(session.month == month) {
+                                if (session.totalHrs < 8) {
+                                    totalTimeShort += (8 - session.totalHrs);
+                                }
+                                totalHrsMonth += session.totalHrs;
+                                overTimeMonth += session.overTime;
+                            }
+                        })
+                        res.render('app/work-history', {
+                            staff: staff,
+                            sessions: staff.sessions,
+                            pageTitle: 'Work History',
+                            path:'/work-history',
+                            isAuthenticated: req.session.isLoggedIn,
+                            month: month,
+                            totalHrsMonth: totalHrsMonth,
+                            overTimeMonth: overTimeMonth,
+                            totalTimeShort: totalTimeShort,
+                            currentPage: page,
+                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page - 1,
+                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                            line: ITEMS_PER_PAGE,
+                        });
+                    }
+                })
+                .catch(err => console.log(err))
+        })
+        .catch(err => console.log(err))
+}
+
+exports.postWorkHistory = (req, res, next) => {
+    ITEMS_PER_PAGE = req.body.line;
+    const page = +req.query.page || 1;
+    const dayNow = new Date();
+    const month = dayNow.getMonth() + 1;
+    let totalItems;
+    WorkSession.find({
+        _id: {
+          $in: req.staff.sessions
+        }
+      }).countDocuments().then(numSessions => {
+        totalItems = numSessions;
+        return Staff.findOne({username: req.session.staff.username})
+                    .populate({path: 'sessions', 
+                        options: {
+                            skip: (page - 1)*ITEMS_PER_PAGE, 
+                            limit: ITEMS_PER_PAGE
+                        }})
+                    .populate(['annualLeave'])
+      })
+        .then(staff => {
+            Staff.findOne({_id: staff.managerId})
+                .then(result => {
+                    if(result !== null) {
+                        const managerName = result.toJSON().name;
+                        let totalHrsMonth = 0;
+                        let overTimeMonth = 0;
+                        let totalTimeShort = 0;
+                        staff.sessions.forEach(session => {
+                            if(session.month == month) {
+                                if (session.totalHrs < 8) {
+                                    totalTimeShort += (8 - session.totalHrs);
+                                }
+                                totalHrsMonth += session.totalHrs;
+                                overTimeMonth += session.overTime;
+                            }
+                        })
+                        res.render('app/work-history', {
+                            staff: staff,
+                            sessions: staff.sessions,
+                            pageTitle: 'Work History',
+                            path:'/work-history',
+                            isAuthenticated: req.session.isLoggedIn,
+                            month: month,
+                            totalHrsMonth: totalHrsMonth,
+                            overTimeMonth: overTimeMonth,
+                            totalTimeShort: totalTimeShort,
+                            managerName: managerName,
+                            currentPage: page,
+                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page - 1,
+                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                            line: ITEMS_PER_PAGE,
+                        });
+                    } else {
+                        let totalHrsMonth = 0;
+                        let overTimeMonth = 0;
+                        let totalTimeShort = 0;
+                        staff.sessions.forEach(session => {
+                            if(session.month == month) {
+                                if (session.totalHrs < 8) {
+                                    totalTimeShort += (8 - session.totalHrs);
+                                }
+                                totalHrsMonth += session.totalHrs;
+                                overTimeMonth += session.overTime;
+                            }
+                        })
+                        res.render('app/work-history', {
+                            staff: staff,
+                            sessions: staff.sessions,
+                            pageTitle: 'Work History',
+                            path:'/work-history',
+                            isAuthenticated: req.session.isLoggedIn,
+                            month: month,
+                            totalHrsMonth: totalHrsMonth,
+                            overTimeMonth: overTimeMonth,
+                            totalTimeShort: totalTimeShort,
+                            currentPage: page,
+                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                            hasPreviousPage: page > 1,
+                            nextPage: page + 1,
+                            previousPage: page - 1,
+                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                            line: ITEMS_PER_PAGE,
+                        });
+                    }
+                })
+                .catch(err => console.log(err))
         })
         .catch(err => console.log(err))
 }
 
 exports.getCovidInfo = (req, res, next) => {        //Hiển thị view covid
-    const isAdmin = req.staff.isAdmin;
     Staff.find({
         _id: {
           $in: req.staff.staffs
@@ -251,13 +454,11 @@ exports.getCovidInfo = (req, res, next) => {        //Hiển thị view covid
             Promise.all(findArr).then(result => {
                 res.render('app/covid-info', {
                     user: req.staff,
-                    isAmin: req.staff.isAdmin,
                     staffs: staffs,
                     covid: covidArr,
                     pageTitle: 'Covid Information',
                     path:'/covid-info',
                     isAuthenticated: req.session.isLoggedIn,
-                    isAdmin: isAdmin
                 });
             })
         })

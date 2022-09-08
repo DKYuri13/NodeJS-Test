@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const annualLeaveSchema = new Schema({
     annualLeaveDate: {
-        type: Date,
+        type: String,
         required: true
     },
     annualLeaveHour: {

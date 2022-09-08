@@ -25,6 +25,7 @@
                     name="password" 
                     id="password" >
             </div>
+            <input type="hidden" name="previousPath" value="<%= previousPath %>">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="btn" type="submit">Đăng nhập</button>
         </form>
