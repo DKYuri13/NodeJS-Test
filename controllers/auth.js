@@ -11,9 +11,9 @@ exports.getLogin = (req, res, next) => {
   }
 
   let previousPath;
-  const webPath = req.header('Referer').split('/')[2];                           //Lấy chuỗi tên web
-  
+                             
   if (req.header('Referer')) {
+    const webPath = req.header('Referer').split('/')[2]; //Lấy chuỗi tên web
     previousPath = req.header('Referer').replace('http://' + webPath,'');
   } else {
     previousPath;
