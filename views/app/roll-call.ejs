@@ -42,6 +42,14 @@
             <div class="rollCall_items">                <!-- Hiển thị checkout -->
                 <h2>Họ và tên: <%= staff.name %></h2><hr>         
                 <p>Số giờ đã làm hôm nay: <%= workSessions[workSessions.length-1].totalHrs %></p>
+                <% if (staff.status == 'Resting') { %>      <!-- Validate Status -->
+                <% } else { %>
+                    <form action="/endWork" method="POST">                                      <!-- Form checkout -->
+                        <input type="hidden" name="status" value="Resting">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button class="btn btn_centered" type="submit">Kết Thúc Làm</button>
+                    </form>
+                <% } %>
                 <p>Danh sách các session:</p>
 
                 <% for (let session of staff.sessions) { %>
@@ -50,15 +58,6 @@
                             - Kết thúc: <%= item.stopTime ? item.stopTime : 'Chưa kết thúc' %> 
                             - Nơi làm: <%= item.workplace %></p>
                     <% } %> 
-                <% } %>
-
-                <% if (staff.status == 'Resting') { %>      <!-- Validate Status -->
-                <% } else { %>
-                <form action="/endWork" method="POST">                                      <!-- Form checkout -->
-                    <input type="hidden" name="status" value="Resting">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button class="btn btn_centered" type="submit">Kết Thúc Làm</button>
-                </form>
                 <% } %>
             </div>
         </div>
