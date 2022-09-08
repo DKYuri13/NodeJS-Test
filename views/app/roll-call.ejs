@@ -41,7 +41,7 @@
         <div class="stopWork modal">
             <div class="rollCall_items">                <!-- Hiển thị checkout -->
                 <h2>Họ và tên: <%= staff.name %></h2><hr>         
-                <p>Số giờ đã làm hôm nay:</p>
+                <p>Số giờ đã làm hôm nay: <%= workSessions[workSessions.length-1].totalHrs %></p>
                 <p>Danh sách các session:</p>
 
                 <% for (let session of staff.sessions) { %>
