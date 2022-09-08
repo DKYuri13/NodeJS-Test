@@ -168,8 +168,12 @@ exports.getWorkHistory = (req, res, next) => {                          //HIỂN
         _id: {
           $in: req.staff.sessions                                       //Tìm các phiên làm việc của nhân viên
         }
-      }).countDocuments().then(numSessions => {                                        //Đếm tổng số phiên làm việc và populate phiên làm việc hiển thị từng trang
-        totalItems = numSessions;
+      }).then(sessions => {                                        //Đếm tổng số phiên làm việc và populate phiên làm việc hiển thị từng trang
+        let numItems = 0;
+        sessions.forEach(session => {
+            return numItems += 1;
+        })
+        totalItems = numItems;
         return Staff.findOne({username: req.session.staff.username})
                     .populate({path: 'sessions', 
                         options: {
