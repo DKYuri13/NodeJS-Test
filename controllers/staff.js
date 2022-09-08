@@ -5,7 +5,7 @@ const Covid = require('../models/covid');
 
 let ITEMS_PER_PAGE = 20
 
-exports.getRollCall = (req, res, next) => {
+exports.getRollCall = (req, res, next) => {                                                                 //HIỂN THỊ MÀN HÌNH ĐIỂM DANH
         Staff.findOne({username: req.staff.username}).populate(['sessions']).populate(['annualLeave'])    //Trả về staff và session, annualLeave tương ứng với staff
             .then(staff => {
                 res.render('app/roll-call', {
@@ -20,7 +20,7 @@ exports.getRollCall = (req, res, next) => {
             });
 };
 
-exports.postRollCall = (req, res, next) => {       //Post checkin
+exports.postRollCall = (req, res, next) => {       //POST CHECKIN
 
     const workplace = req.body.workplace;
     const current = new Date();
@@ -92,7 +92,7 @@ exports.postRollCall = (req, res, next) => {       //Post checkin
         .catch(err => console.log(err))   
 };
 
-exports.postStopWork = (req, res, next) => {        //Post checkout
+exports.postStopWork = (req, res, next) => {        //POST CHECK OUT
 
     const current = new Date;
     const stopTime = current;
@@ -123,7 +123,7 @@ exports.postStopWork = (req, res, next) => {        //Post checkout
     });
 }
 
-exports.postAnnualLeave = (req, res, next) => {     //Post xin nghỉ
+exports.postAnnualLeave = (req, res, next) => {                                         //POST XIN NGHỈ
     const annualLeaveDate = req.body.annualLeaveDate;
     const annualLeaveHour = req.body.annualLeaveHour;
     const reason = req.body.reason;
@@ -145,7 +145,7 @@ exports.postAnnualLeave = (req, res, next) => {     //Post xin nghỉ
         .catch(err => console.log(err))
 }
 
-exports.getInformation = (req, res, next) => {      //Hiển thị thông tin cá nhân
+exports.getInformation = (req, res, next) => {                                      //HIỂN THỊ THÔNG TIN CÁ NHÂN
     Staff.findOne({username: req.staff.username}).populate(['annualLeave'])
         .then(staff => {
             res.render('app/information', {
@@ -157,7 +157,7 @@ exports.getInformation = (req, res, next) => {      //Hiển thị thông tin c�
         .catch(err => console.log(err));
 };
 
-exports.getWorkHistory = (req, res, next) => {                          //Hiển thị lịch sử làm việc
+exports.getWorkHistory = (req, res, next) => {                          //HIỂN THỊ LỊCH SỬ LÀM VIỆC
     const page = +req.query.page || 1;
     const dayNow = new Date();
     const month = dayNow.getMonth() + 1;                                //Lấy mặc định tháng hiện tại
@@ -259,7 +259,7 @@ exports.getWorkHistory = (req, res, next) => {                          //Hiển
         .catch(err => console.log(err))
 };
 
-exports.postMonthWorkHistory = (req, res, next) => {                                    //Render khi chọn tháng lương hiển thị
+exports.postMonthWorkHistory = (req, res, next) => {                                    //RENDER MÀN HÌNH THÔNG TIN GIỜ LÀM KHI CHỌN THÁNG LƯƠNG HIỂN THỊ
     const page = +req.query.page || 1;
     const month = req.body.month;
 
@@ -359,7 +359,7 @@ exports.postMonthWorkHistory = (req, res, next) => {                            
         .catch(err => console.log(err))
 }
 
-exports.postWorkHistory = (req, res, next) => {                                     //Render khi chọn số phiên làm việc hiển thị từng trang
+exports.postWorkHistory = (req, res, next) => {                                     //RENDER MÀN HÌNH THÔNG TIN GIỜ LÀM KHI CHỌN SỐ PHIÊN HIỂN THỊ TỪNG TRANG
 
     ITEMS_PER_PAGE = req.body.line;                                                 //Số phiên làm việc hiển thị từng trang
     const page = +req.query.page || 1;
@@ -493,7 +493,7 @@ exports.getCovidInfo = (req, res, next) => {        //Hiển thị view covid
         })
 };
 
-exports.postImage = (req, res, next) => {                                           //Post ảnh
+exports.postImage = (req, res, next) => {                                           //POST ẢNH
     const image = req.file;
 
     const imageUrl = image.path;
@@ -508,7 +508,7 @@ exports.postImage = (req, res, next) => {                                       
     })
 }
 
-exports.postCovidTemperature = (req, res, next) => {    //Post thân nhiệt
+exports.postCovidTemperature = (req, res, next) => {                                //POST THÂN NHIỆT
     const temperature = req.body.temperature;
     const date = req.body.date;
     Covid.findOne({_id: req.staff.covid[0]._id}).then(covid => {
@@ -521,7 +521,7 @@ exports.postCovidTemperature = (req, res, next) => {    //Post thân nhiệt
     })
 }
 
-exports.postCovidVaccine = (req, res, next) => {    //Post Vaccine
+exports.postCovidVaccine = (req, res, next) => {                                        //POST VACCINE
     const vaccineType1 = req.body.vaccineType1;
     const vaccineDate1 = req.body.vaccineDate1;
     const vaccineType2 = req.body.vaccineType2;
@@ -536,7 +536,7 @@ exports.postCovidVaccine = (req, res, next) => {    //Post Vaccine
     })
 }
 
-exports.postCovidStatus = (req, res, next) => {    //Post tình trạng covid
+exports.postCovidStatus = (req, res, next) => {                                         //POST TÌNH TRẠNG COVID 
     const covidStatus = req.body.covidStatus;
     Covid.findOne({_id: req.staff.covid[0]._id}).then(covid => {
         covid.covidStatus = covidStatus;
