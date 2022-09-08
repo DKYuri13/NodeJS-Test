@@ -35,8 +35,8 @@
                     <li class="salary_items">Thông tin quản lý: Không có quản lý</li>
                 <% } %> 
                 <li class="salary_items">Hệ số lương: <%= staff.salaryScale %> </li>
-                <li class="salary_items">Số giờ làm thêm: <%= overTimeMonth.toFixed(1) %></li>
-                <li class="salary_items">Số giờ làm thiếu: <%= totalTimeShort.toFixed(1) %></li>
+                <li class="salary_items">Số giờ làm thêm: <%= overTimeMonth %></li>
+                <li class="salary_items">Số giờ làm thiếu: <%= totalTimeShort %></li>
                 <li class="salary_items">Lương: <%= (staff.salaryScale*3000000+((overTimeMonth - totalTimeShort)*200000)) %> đồng (Lương = salaryScale * 3000000 + (overTime - số giờ làm thiếu) * 200000)</li>
             </ul>
         </div>
@@ -66,12 +66,12 @@
                             <li class="history_items">Giờ kết thúc làm: Chưa kết thúc</li><hr>
                         <% } else { %>
                             <li class="history_items">Giờ kết thúc làm: <%= item.stopTime %></li>
-                            <li class="history_items">Tổng số giờ làm ca này: <%= item.hours.toFixed(1) %> giờ</li><hr>
+                            <li class="history_items">Tổng số giờ làm ca này: <%= item.hours %> giờ</li><hr>
                     <% } %>
                     <% } %>
                     <% if (session.items[session.items.length-1].stopTime) { %> 
-                        <li class="history_items">Tổng số giờ làm cả ngày: <%= session.totalHrs.toFixed(1) %> 
-                            (Số giờ làm thêm: <%= session.overTime.toFixed(1) %>  , Số giờ thiếu: <%= (8 - session.totalHrs).toFixed(1) %> ) </li>
+                        <li class="history_items">Tổng số giờ làm cả ngày: <%= session.totalHrs %> 
+                            (Số giờ làm thêm: <%= session.overTime %>  , Số giờ thiếu: <%= (8 - session.totalHrs) %> ) </li>
                     <% } else { %>
                         <li class="history_items">Tổng số giờ làm cả ngày: Chưa kết thúc</li> 
                     <% } %> 
