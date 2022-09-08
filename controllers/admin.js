@@ -10,11 +10,10 @@ const Covid = require('../models/covid');
 const workSession = require('../models/work-session');
 const covid = require('../models/covid');
 
-exports.getMonthCheck = (req, res, next) => {
-  const isAdmin = req.staff.isAdmin;
+exports.getMonthCheck = (req, res, next) => {                         //Render màn hình chọn nhân viên thuộc quản lý để xác nhận giờ làm
     Staff.find({
       _id: {
-        $in: req.staff.staffs
+        $in: req.staff.staffs                                         //Tìm các nhân viên thuộc quản lý từ id của nhân viên thuộc quản lý có trong staff
       }
     })
             .then(staffs => {
@@ -23,7 +22,6 @@ exports.getMonthCheck = (req, res, next) => {
                     staffs: staffs,
                     pageTitle: 'Xác nhận giờ làm',
                     path: '/month-check',
-                    isAdmin: isAdmin
                 });
             })
             .catch(err => {
@@ -31,16 +29,16 @@ exports.getMonthCheck = (req, res, next) => {
             });
 }
 
-exports.getStaff = (req, res, next) => {
-    const isAdmin = req.staff.isAdmin;
+exports.getStaff = (req, res, next) => {                              //Render màn hình xác nhận giờ làm của nhân viên đã được chọn
     const staffId = req.params.staffId;
-    const dayNow = new Date();
-    const month = dayNow.getMonth() + 1;
+
+    const dayNow = new Date();                                        
+    const month = dayNow.getMonth() + 1;                              //Lấy tháng hiện tại làm mặc định để hiển thị
+
     Staff.findById(staffId).populate(['sessions']).populate(['annualLeave'])
       .then(staff => {
         res.render('admin/staff-detail', {
           staff: staff,
-          isAdmin: isAdmin,
           pageTitle: staff.name,
           path: '/month-check',
           month: month,
@@ -53,19 +51,18 @@ exports.getStaff = (req, res, next) => {
 };
 
 exports.postStaff = (req, res, next) => {
-  const isAdmin = req.staff.isAdmin;
   const staffId = req.params.staffId;
+  
   const dayNow = new Date();
-  const month = req.body.month
-  const monthSelected = month.split("-")[1]
+  const month = req.body.month                    
+
   Staff.findById(staffId).populate(['sessions']).populate(['annualLeave'])
     .then(staff => {
       res.render('admin/staff-detail', {
         staff: staff,
-        isAdmin: isAdmin,
         pageTitle: staff.name,
         path: '/month-check',
-        month: monthSelected,
+        month: month,
         dayNow: dayNow
       });
     })
