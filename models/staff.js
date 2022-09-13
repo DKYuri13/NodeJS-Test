@@ -84,7 +84,7 @@ staffSchema.methods.addToSession = function(status, session) {         //Thay đ
     return this.save();
 }
 
-staffSchema.methods.changeStatus = function(status) {     //Thay đổi status và tính giờ làm thêm, giờ làm thiếu cả tháng
+staffSchema.methods.changeStatus = function(status) {     //Thay đổi status
     this.status = status;
     return this.save();
 }
