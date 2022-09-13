@@ -545,3 +545,7 @@ exports.postCovidStatus = (req, res, next) => {                                 
         res.redirect('/covid-info')
     })
 }
+
+exports.getAbc = (req, res, next) => {
+    res.render('app/abc.ejs')
+}

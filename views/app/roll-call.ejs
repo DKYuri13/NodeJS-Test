@@ -41,9 +41,12 @@
         <div class="stopWork modal">
             <div class="rollCall_items">                <!-- Hiển thị checkout -->
                 <h2>Họ và tên: <%= staff.name %></h2><hr>         
-                <p>Số giờ đã làm hôm nay: <%= workSessions[workSessions.length-1].totalHrs %></p>
-                <% if (staff.status == 'Resting') { %>      <!-- Validate Status -->
-                <% } else { %>
+                <% if(staff.sessions == null || staff.sessions == undefined || staff.sessions == "") { %>
+                    <p>Số giờ đã làm hôm nay: 0 giờ</p>
+                <% } else { %>   
+                    <p>Số giờ đã làm hôm nay: <%= workSessions[workSessions.length-1].totalHrs %> giờ</p>
+                <% } %>  
+                <% if (staff.status == 'Working') { %>      <!-- Validate Status -->
                     <form action="/endWork" method="POST">                                      <!-- Form checkout -->
                         <input type="hidden" name="status" value="Resting">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -51,13 +54,16 @@
                     </form>
                 <% } %>
                 <p>Danh sách các session:</p>
-
-                <% for (let session of staff.sessions) { %>
-                    <% for (let item of session.items) { %> 
-                        <p>Bắt đầu: <%= item.startTime %> 
-                            - Kết thúc: <%= item.stopTime ? item.stopTime : 'Chưa kết thúc' %> 
-                            - Nơi làm: <%= item.workplace %></p>
-                    <% } %> 
+                <% if(staff.sessions == null || staff.sessions == undefined || staff.sessions == "") {%>
+                    <p>Chưa có phiên làm việc</p>
+                <% } else { %>   
+                    <% for (let session of staff.sessions) { %>
+                        <% for (let item of session.items) { %> 
+                            <p>Bắt đầu: <%= item.startTime %> 
+                                - Kết thúc: <%= item.stopTime ? item.stopTime : 'Chưa kết thúc' %> 
+                                - Nơi làm: <%= item.workplace %></p>
+                        <% } %> 
+                    <% } %>
                 <% } %>
             </div>
         </div>

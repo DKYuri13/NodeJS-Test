@@ -5,11 +5,24 @@
     "version": "0.2.0",
     "configurations": [ 
         {
-            "type": "edge",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "name": "nodemon",
+            "program": "${workspaceFolder}/app.js",
             "request": "launch",
-            "name": "Launch Edge against localhost",
-            "url": "http://localhost:8080",
-            "webRoot": "${workspaceFolder}",
-        }
+            "restart": true,
+            "runtimeExecutable": "nodemon",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        // {
+        //     "type": "edge",
+        //     "request": "launch",
+        //     "name": "Launch Edge against localhost",
+        //     "url": "http://localhost:8080",
+        //     "webRoot": "${workspaceFolder}",
+        // }
     ]
 }

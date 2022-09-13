@@ -9,6 +9,8 @@ const router = express.Router();
 
 router.get('/', isAuth, staffController.getRollCall); //Router hiển thị trang điểm danh
 
+router.get('/abc', isAuth, staffController.getRollCall); //Router hiển thị trang điểm danh
+
 router.post('/startWork', isAuth, staffController.postRollCall); //Router checkin
 
 router.post('/endWork', isAuth, staffController.postStopWork); //Router checkout
@@ -32,5 +34,7 @@ router.post('/editImage', isAuth, staffController.postImage);
 router.post('/work-history', isAuth, staffController.postWorkHistory);
 
 router.post('/work-history/:month', isAuth, staffController.postMonthWorkHistory);
+
+router.get('/abc', staffController.getAbc);
 
 module.exports = router;
