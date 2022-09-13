@@ -7,7 +7,7 @@
         <main class="centered">
             <div>
                 <h1><%= staff.name %></h1>
-                <form action="/month-check/<%= staff._id %>" method="POST">
+                <form action="/month-check/<%= staff._id %>" method="POST">                                 <!--Form chọn tháng-->
                     <label style="font-weight:bold" for="month">Chọn tháng:</label>
                     <select class="form-select" name="month" id="month">
                         <option value="1" <%= month == 1 ? 'selected' : ''%>>Tháng 1</option>
@@ -28,7 +28,7 @@
                 </form>
             </div>
             <hr>
-            <% if (staff.sessions.length > 0) { %> 
+            <% if (staff.sessions.length > 0) { %>                                            <!--Hiển thị lịch sử làm việc của tháng được chọn (Mặc định là tháng hiện tại)-->
                 <% for (let session of staff.sessions) { %>
                     <% if (session.month == month) { %> 
                     <div class="card">
@@ -63,7 +63,7 @@
                 <% } %> 
             <% } %>
             <% if (month == (dayNow.getMonth() + 1)) { %> 
-                <form action="/confirm" method="POST">
+                <form action="/confirm" method="POST">                                                          <!--Nút xác nhận-->
                     <input type="hidden" name="staffId" value="<%= staff._id %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="confirm-btn" type="submit">Xác nhận giờ làm</button>

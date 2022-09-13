@@ -88,7 +88,7 @@ app.use(authRoutes);
 
 app.use(errorController.get404);    //Xử lý các link không tồn tại
 
-mongoose                            //Connect host/port
+mongoose                            //Connect DB và host/port
     .connect(MONGODB_URI)
     .then(result => {
         app.listen(process.env.PORT || 8000, '0.0.0.0', () => {
