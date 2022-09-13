@@ -10,20 +10,22 @@ const csrf = require('csurf');
 const flash = require('connect-flash');
 const multer = require('multer');
 
-const errorController = require('./controllers/error');     //Controller, model,....
+const errorController = require('./controllers/error');     //Import controller, model,....
 const Staff = require('./models/staff');
 const Covid = require('./models/covid');
 const WorkSession = require('./models/work-session');
 
 const MONGODB_URI = 'mongodb+srv://Quang:Quang013@cluster1.oehkwdn.mongodb.net/rollcall?retryWrites=true&w=majority';
 
-const app = express();
-const store = new MongoDBStore({
+const app = express();                                                                  //Express
+
+const store = new MongoDBStore({                                                        //Tạo store sessions mongoDB
     uri: MONGODB_URI,
     collection: 'sessions'
 });
+
 const csrfProtection = csrf();
-const fileStorage = multer.diskStorage({
+const fileStorage = multer.diskStorage({                                                //Storage ảnh
     destination: (req, file, cb) => {
         cb(null, 'images')
     },
@@ -32,7 +34,7 @@ const fileStorage = multer.diskStorage({
     }
 })
 
-const fileFilter = (req, file, cb) => {
+const fileFilter = (req, file, cb) => {                                                                             //Filter file type ảnh
     if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
         cb(null, true)
     } else {
@@ -48,14 +50,20 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 
 app.use(bodyParser.urlencoded({extended: false}));
-app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
-app.use(session({secret: 'my secret', resave: false, saveUninitialized: false, store: store}));
-app.use(csrfProtection);
-app.use(flash());
 
-app.use((req, res, next) => {
+app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));                                   //Multer config
+
+app.use(express.static(path.join(__dirname, 'public')));                                                           //Path folder public
+
+app.use('/images', express.static(path.join(__dirname, 'images')));                                                 //Path folder images
+
+app.use(session({secret: 'my secret', resave: false, saveUninitialized: false, store: store}));                     //Session config
+
+app.use(csrfProtection);                          //Csurf chống giả mạo web
+
+app.use(flash());                               //flash connection
+
+app.use((req, res, next) => {                                     //Tìm staff đang dùng
     if (!req.session.staff) {
         return next();
     }
@@ -67,20 +75,20 @@ app.use((req, res, next) => {
     .catch(err => console.log(err))
 });
 
-app.use((req, res, next) => {
+app.use((req, res, next) => {                                                         //Thêm dữ liệu local
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.isAdmin = req.session.isAdmin;
     res.locals.csrfToken = req.csrfToken();
     next();
 })
 
-app.use(staffRoutes);
+app.use(staffRoutes);               //Routes
 app.use(adminRoutes);
 app.use(authRoutes);
 
-app.use(errorController.get404);
+app.use(errorController.get404);    //Xử lý các link không tồn tại
 
-mongoose
+mongoose                            //Connect host/port
     .connect(MONGODB_URI)
     .then(result => {
         app.listen(process.env.PORT || 8000, '0.0.0.0', () => {
