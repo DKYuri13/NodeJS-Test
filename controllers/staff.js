@@ -164,100 +164,93 @@ exports.getWorkHistory = (req, res, next) => {                          //HIỂN
     const month = dayNow.getMonth() + 1;                                //Lấy mặc định tháng hiện tại
 
     let totalItems;                                                     //Tổng số phiên làm việc
-
     WorkSession.find({
         _id: {
           $in: req.staff.sessions                                       //Tìm các phiên làm việc của nhân viên
         }
-      }).countDocuments().then(numSessions => {                                        //Đếm tổng số phiên làm việc và populate phiên làm việc hiển thị từng trang
-        totalItems = numSessions;
-        return Staff.findOne({username: req.session.staff.username})
-                    .populate({path: 'sessions', 
-                        options: {
-                            skip: (page - 1)*ITEMS_PER_PAGE, 
-                            limit: ITEMS_PER_PAGE
-                        }})
-                    .populate(['annualLeave'])
-      })
-        .then(staff => {
-            Staff.findOne({_id: staff.managerId})                                       //Tìm quản lý
-                .then(result => {
+      }).then(sessions => {
+        let totalHrsMonth = 0;
+        let overTimeMonth = 0;
+        let totalTimeShort = 0;
 
-                    if(result !== null) {                                               //NẾU CÓ QUẢN LÝ
-                        const managerName = result.toJSON().name;
-                        let totalHrsMonth = 0;
-                        let overTimeMonth = 0;
-                        let totalTimeShort = 0;
-
-                        staff.sessions.forEach(session => {                             //Tính các dữ kiện thời gian làm việc cả tháng
-                            if(session.month == month) {
-                                if (session.totalHrs < 8) {
-                                    totalTimeShort += (8 - session.totalHrs);
-                                }
-                                totalHrsMonth += session.totalHrs;
-                                overTimeMonth += session.overTime;
-                            }
-                        })
-
-                        res.render('app/work-history', {                                //Render
-                            staff: staff,
-                            sessions: staff.sessions,
-                            pageTitle: 'Work History',
-                            path:'/work-history',
-                            isAuthenticated: req.session.isLoggedIn,
-                            month: month,
-                            totalHrsMonth: totalHrsMonth,
-                            overTimeMonth: overTimeMonth,
-                            totalTimeShort: totalTimeShort,
-                            managerName: managerName,
-                            currentPage: page,
-                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                            hasPreviousPage: page > 1,
-                            nextPage: page + 1,
-                            previousPage: page - 1,
-                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                            line: ITEMS_PER_PAGE,
-                        });
-
-                    } else {                                                            //NẾU KHÔNG CÓ QUẢN LÝ
-
-                        let totalHrsMonth = 0;
-                        let overTimeMonth = 0;
-                        let totalTimeShort = 0;
-
-                        staff.sessions.forEach(session => {                             //Tính các dữ kiện thời gian làm việc cả tháng
-                            if(session.month == month) {
-                                if (session.totalHrs < 8) {
-                                    totalTimeShort += (8 - session.totalHrs);
-                                }
-                                totalHrsMonth += session.totalHrs;
-                                overTimeMonth += session.overTime;
-                            }
-                        })
-
-                        res.render('app/work-history', {                                  //Render
-                            staff: staff,
-                            sessions: staff.sessions,
-                            pageTitle: 'Work History',
-                            path:'/work-history',
-                            isAuthenticated: req.session.isLoggedIn,
-                            month: month,
-                            totalHrsMonth: totalHrsMonth,
-                            overTimeMonth: overTimeMonth,
-                            totalTimeShort: totalTimeShort,
-                            currentPage: page,
-                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                            hasPreviousPage: page > 1,
-                            nextPage: page + 1,
-                            previousPage: page - 1,
-                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                            line: ITEMS_PER_PAGE,
-                        });
-                    }
-                })
-                .catch(err => console.log(err))
+        sessions.forEach(session => {
+            if(session.month == month) {
+                if (session.totalHrs < 8) {
+                    totalTimeShort += (8 - session.totalHrs);
+                }
+                totalHrsMonth += session.totalHrs;
+                overTimeMonth += session.overTime;
+            }
         })
-        .catch(err => console.log(err))
+
+        WorkSession.find({
+            _id: {
+                $in: req.staff.sessions                                       //Tìm các phiên làm việc của nhân viên
+            }
+            }).countDocuments().then(numSessions => {                                        //Đếm tổng số phiên làm việc và populate phiên làm việc hiển thị từng trang
+            totalItems = numSessions;
+            return Staff.findOne({username: req.session.staff.username})
+                        .populate({path: 'sessions', 
+                            options: {
+                                skip: (page - 1)*ITEMS_PER_PAGE, 
+                                limit: ITEMS_PER_PAGE
+                            }})
+                        .populate(['annualLeave'])
+            })
+            .then(staff => {
+                Staff.findOne({_id: staff.managerId})                                       //Tìm quản lý
+                    .then(result => {
+
+                        if(result !== null) {                                               //NẾU CÓ QUẢN LÝ
+                            const managerName = result.toJSON().name;
+
+                            res.render('app/work-history', {                                //Render
+                                staff: staff,
+                                sessions: staff.sessions,
+                                pageTitle: 'Work History',
+                                path:'/work-history',
+                                isAuthenticated: req.session.isLoggedIn,
+                                month: month,
+                                totalHrsMonth: totalHrsMonth,
+                                overTimeMonth: overTimeMonth,
+                                totalTimeShort: totalTimeShort,
+                                managerName: managerName,
+                                currentPage: page,
+                                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                                hasPreviousPage: page > 1,
+                                nextPage: page + 1,
+                                previousPage: page - 1,
+                                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                                line: ITEMS_PER_PAGE,
+                            });
+
+                        } else {                                                            //NẾU KHÔNG CÓ QUẢN LÝ
+
+                            res.render('app/work-history', {                                  //Render
+                                staff: staff,
+                                sessions: staff.sessions,
+                                pageTitle: 'Work History',
+                                path:'/work-history',
+                                isAuthenticated: req.session.isLoggedIn,
+                                month: month,
+                                totalHrsMonth: totalHrsMonth,
+                                overTimeMonth: overTimeMonth,
+                                totalTimeShort: totalTimeShort,
+                                currentPage: page,
+                                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                                hasPreviousPage: page > 1,
+                                nextPage: page + 1,
+                                previousPage: page - 1,
+                                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                                line: ITEMS_PER_PAGE,
+                            });
+                        }
+                    })
+                        .catch(err => console.log(err))
+            })
+                .catch(err => console.log(err))
+      })
+        .catch(err => console.log(err))   
 };
 
 exports.postMonthWorkHistory = (req, res, next) => {                                    //RENDER MÀN HÌNH THÔNG TIN GIỜ LÀM KHI CHỌN THÁNG LƯƠNG HIỂN THỊ
@@ -268,95 +261,90 @@ exports.postMonthWorkHistory = (req, res, next) => {                            
 
     WorkSession.find({
         _id: {
-          $in: req.staff.sessions                                                       //Tìm các phiên làm việc của nhân viên
+          $in: req.staff.sessions                                       //Tìm các phiên làm việc của nhân viên
         }
-      }).countDocuments().then(numSessions => {                                         //Tính tổng số phiên làm việc và populate số phiên làm việc từng trang
-        totalItems = numSessions;
-        return Staff.findOne({username: req.session.staff.username})
-                    .populate({path: 'sessions', 
-                        options: {
-                            skip: (page - 1)*ITEMS_PER_PAGE, 
-                            limit: ITEMS_PER_PAGE
-                        }})
-                    .populate(['annualLeave'])
-      })
-        .then(staff => {
-            Staff.findOne({_id: staff.managerId})                                       //Tìm quản lý
-                .then(result => {
+      }).then(sessions => {
+        let totalHrsMonth = 0;
+        let overTimeMonth = 0;
+        let totalTimeShort = 0;
 
-                    if(result !== null) {                                               //NẾU CÓ QUẢN LÝ
-                        const managerName = result.toJSON().name;
-                        let totalHrsMonth = 0;
-                        let overTimeMonth = 0;
-                        let totalTimeShort = 0;
-
-                        staff.sessions.forEach(session => {                                 //Tính các dữ kiện thời gian làm việc cả tháng
-                            if(session.month == month) {
-                                if (session.totalHrs < 8) {
-                                    totalTimeShort += (8 - session.totalHrs);
-                                }
-                                totalHrsMonth += session.totalHrs;
-                                overTimeMonth += session.overTime;
-                            }
-                        })
-
-                        res.render('app/work-history', {                                    //Render
-                            staff: staff,
-                            sessions: staff.sessions,
-                            pageTitle: 'Work History',
-                            path:'/work-history',
-                            isAuthenticated: req.session.isLoggedIn,
-                            month: month,
-                            totalHrsMonth: totalHrsMonth,
-                            overTimeMonth: overTimeMonth,
-                            totalTimeShort: totalTimeShort,
-                            managerName: managerName,
-                            currentPage: page,
-                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                            hasPreviousPage: page > 1,
-                            nextPage: page + 1,
-                            previousPage: page - 1,
-                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                            line: ITEMS_PER_PAGE,
-                        });
-
-                    } else {                                                                    //NẾU KHÔNG CÓ QUẢN LÝ
-                        let totalHrsMonth = 0;
-                        let overTimeMonth = 0;
-                        let totalTimeShort = 0;
-
-                        staff.sessions.forEach(session => {                                     //Tính dữ kiện thời gian làm việc cả tháng
-                            if(session.month == month) {
-                                if (session.totalHrs < 8) {
-                                    totalTimeShort += (8 - session.totalHrs);
-                                }
-                                totalHrsMonth += session.totalHrs;
-                                overTimeMonth += session.overTime;
-                            }
-                        })
-
-                        res.render('app/work-history', {                                        //Render
-                            staff: staff,
-                            sessions: staff.sessions,
-                            pageTitle: 'Work History',
-                            path:'/work-history',
-                            isAuthenticated: req.session.isLoggedIn,
-                            month: month,
-                            totalHrsMonth: totalHrsMonth,
-                            overTimeMonth: overTimeMonth,
-                            totalTimeShort: totalTimeShort,
-                            currentPage: page,
-                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                            hasPreviousPage: page > 1,
-                            nextPage: page + 1,
-                            previousPage: page - 1,
-                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                            line: ITEMS_PER_PAGE,
-                        });
-                    }
-                })
-                .catch(err => console.log(err))
+        sessions.forEach(session => {
+            if(session.month == month) {
+                if (session.totalHrs < 8) {
+                    totalTimeShort += (8 - session.totalHrs);
+                }
+                totalHrsMonth += session.totalHrs;
+                overTimeMonth += session.overTime;
+            }
         })
+
+        WorkSession.find({
+            _id: {
+            $in: req.staff.sessions                                                       //Tìm các phiên làm việc của nhân viên
+            }
+        }).countDocuments().then(numSessions => {                                         //Tính tổng số phiên làm việc và populate số phiên làm việc từng trang
+            totalItems = numSessions;
+            return Staff.findOne({username: req.session.staff.username})
+                        .populate({path: 'sessions', 
+                            options: {
+                                skip: (page - 1)*ITEMS_PER_PAGE, 
+                                limit: ITEMS_PER_PAGE
+                            }})
+                        .populate(['annualLeave'])
+        })
+            .then(staff => {
+                Staff.findOne({_id: staff.managerId})                                       //Tìm quản lý
+                    .then(result => {
+
+                        if(result !== null) {                                               //NẾU CÓ QUẢN LÝ
+                            const managerName = result.toJSON().name;
+
+                            res.render('app/work-history', {                                    //Render
+                                staff: staff,
+                                sessions: staff.sessions,
+                                pageTitle: 'Work History',
+                                path:'/work-history',
+                                isAuthenticated: req.session.isLoggedIn,
+                                month: month,
+                                totalHrsMonth: totalHrsMonth,
+                                overTimeMonth: overTimeMonth,
+                                totalTimeShort: totalTimeShort,
+                                managerName: managerName,
+                                currentPage: page,
+                                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                                hasPreviousPage: page > 1,
+                                nextPage: page + 1,
+                                previousPage: page - 1,
+                                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                                line: ITEMS_PER_PAGE,
+                            });
+
+                        } else {                                                                    //NẾU KHÔNG CÓ QUẢN LÝ
+
+                            res.render('app/work-history', {                                        //Render
+                                staff: staff,
+                                sessions: staff.sessions,
+                                pageTitle: 'Work History',
+                                path:'/work-history',
+                                isAuthenticated: req.session.isLoggedIn,
+                                month: month,
+                                totalHrsMonth: totalHrsMonth,
+                                overTimeMonth: overTimeMonth,
+                                totalTimeShort: totalTimeShort,
+                                currentPage: page,
+                                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                                hasPreviousPage: page > 1,
+                                nextPage: page + 1,
+                                previousPage: page - 1,
+                                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                                line: ITEMS_PER_PAGE,
+                            });
+                        }
+                    })
+                    .catch(err => console.log(err))
+            })
+            .catch(err => console.log(err))
+    })
         .catch(err => console.log(err))
 }
 
@@ -370,97 +358,92 @@ exports.postWorkHistory = (req, res, next) => {                                 
 
     let totalItems;                                                                 //Tổng số phiên làm việc
 
-    WorkSession.find({                                                              //Tìm các phiên làm việc của nhân viên
+    WorkSession.find({
         _id: {
-          $in: req.staff.sessions
+          $in: req.staff.sessions                                       //Tìm các phiên làm việc của nhân viên
         }
-      }).countDocuments().then(numSessions => {                                      //Tính tổng số phiên làm việc và populate phiên làm việc từng trang
-        totalItems = numSessions;
-        return Staff.findOne({username: req.session.staff.username})
-                    .populate({path: 'sessions', 
-                        options: {
-                            skip: (page - 1)*ITEMS_PER_PAGE, 
-                            limit: ITEMS_PER_PAGE
-                        }})
-                    .populate(['annualLeave'])
-      })
-        .then(staff => {
-            Staff.findOne({_id: staff.managerId})                                      //Tìm quản lý
-                .then(result => {
+      }).then(sessions => {
+        let totalHrsMonth = 0;
+        let overTimeMonth = 0;
+        let totalTimeShort = 0;
 
-                    if(result !== null) {                                               //NẾU KHÔNG CÓ QUẢN LÝ
-                        const managerName = result.toJSON().name;
-                        let totalHrsMonth = 0;
-                        let overTimeMonth = 0;
-                        let totalTimeShort = 0;
-
-                        staff.sessions.forEach(session => {                              //Tính các dữ kiện thời gian làm việc cả tháng
-                            if(session.month == month) {
-                                if (session.totalHrs < 8) {
-                                    totalTimeShort += (8 - session.totalHrs);
-                                }
-                                totalHrsMonth += session.totalHrs;
-                                overTimeMonth += session.overTime;
-                            }
-                        })
-
-                        res.render('app/work-history', {                                    //Render
-                            staff: staff,
-                            sessions: staff.sessions,
-                            pageTitle: 'Work History',
-                            path:'/work-history',
-                            isAuthenticated: req.session.isLoggedIn,
-                            month: month,
-                            totalHrsMonth: totalHrsMonth,
-                            overTimeMonth: overTimeMonth,
-                            totalTimeShort: totalTimeShort,
-                            managerName: managerName,
-                            currentPage: page,
-                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                            hasPreviousPage: page > 1,
-                            nextPage: page + 1,
-                            previousPage: page - 1,
-                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                            line: ITEMS_PER_PAGE,
-                        });
-
-                    } else {                                                                //NẾU KHÔNG CÓ QUẢN LÝ
-                        let totalHrsMonth = 0;
-                        let overTimeMonth = 0;
-                        let totalTimeShort = 0;
-
-                        staff.sessions.forEach(session => {                                     //Tính các dữ kiện thời gian làm việc cả tháng
-                            if(session.month == month) {
-                                if (session.totalHrs < 8) {
-                                    totalTimeShort += (8 - session.totalHrs);
-                                }
-                                totalHrsMonth += session.totalHrs;
-                                overTimeMonth += session.overTime;
-                            }
-                        })
-
-                        res.render('app/work-history', {                                        //Render
-                            staff: staff,
-                            sessions: staff.sessions,
-                            pageTitle: 'Work History',
-                            path:'/work-history',
-                            isAuthenticated: req.session.isLoggedIn,
-                            month: month,
-                            totalHrsMonth: totalHrsMonth,
-                            overTimeMonth: overTimeMonth,
-                            totalTimeShort: totalTimeShort,
-                            currentPage: page,
-                            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-                            hasPreviousPage: page > 1,
-                            nextPage: page + 1,
-                            previousPage: page - 1,
-                            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-                            line: ITEMS_PER_PAGE,
-                        });
-                    }
-                })
-                .catch(err => console.log(err))
+        sessions.forEach(session => {
+            if(session.month == month) {
+                if (session.totalHrs < 8) {
+                    totalTimeShort += (8 - session.totalHrs);
+                }
+                totalHrsMonth += session.totalHrs;
+                overTimeMonth += session.overTime;
+            }
         })
+
+        WorkSession.find({                                                              //Tìm các phiên làm việc của nhân viên
+            _id: {
+            $in: req.staff.sessions
+            }
+        }).countDocuments().then(numSessions => {                                      //Tính tổng số phiên làm việc và populate phiên làm việc từng trang
+            totalItems = numSessions;
+            return Staff.findOne({username: req.session.staff.username})
+                        .populate({path: 'sessions', 
+                            options: {
+                                skip: (page - 1)*ITEMS_PER_PAGE, 
+                                limit: ITEMS_PER_PAGE
+                            }})
+                        .populate(['annualLeave'])
+        })
+            .then(staff => {
+                Staff.findOne({_id: staff.managerId})                                      //Tìm quản lý
+                    .then(result => {
+
+                        if(result !== null) {                                               //NẾU KHÔNG CÓ QUẢN LÝ
+                            const managerName = result.toJSON().name;
+
+                            res.render('app/work-history', {                                    //Render
+                                staff: staff,
+                                sessions: staff.sessions,
+                                pageTitle: 'Work History',
+                                path:'/work-history',
+                                isAuthenticated: req.session.isLoggedIn,
+                                month: month,
+                                totalHrsMonth: totalHrsMonth,
+                                overTimeMonth: overTimeMonth,
+                                totalTimeShort: totalTimeShort,
+                                managerName: managerName,
+                                currentPage: page,
+                                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                                hasPreviousPage: page > 1,
+                                nextPage: page + 1,
+                                previousPage: page - 1,
+                                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                                line: ITEMS_PER_PAGE,
+                            });
+
+                        } else {                                                                //NẾU KHÔNG CÓ QUẢN LÝ
+
+                            res.render('app/work-history', {                                        //Render
+                                staff: staff,
+                                sessions: staff.sessions,
+                                pageTitle: 'Work History',
+                                path:'/work-history',
+                                isAuthenticated: req.session.isLoggedIn,
+                                month: month,
+                                totalHrsMonth: totalHrsMonth,
+                                overTimeMonth: overTimeMonth,
+                                totalTimeShort: totalTimeShort,
+                                currentPage: page,
+                                hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+                                hasPreviousPage: page > 1,
+                                nextPage: page + 1,
+                                previousPage: page - 1,
+                                lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+                                line: ITEMS_PER_PAGE,
+                            });
+                        }
+                    })
+                        .catch(err => console.log(err))
+            })
+                .catch(err => console.log(err))
+    })
         .catch(err => console.log(err))
 }
 
