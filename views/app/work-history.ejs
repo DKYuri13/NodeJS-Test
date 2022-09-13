@@ -6,7 +6,7 @@
 
     <main>
         <h1>Tổng Kết:</h1>
-        <form action="/work-history/<%= month %>" method="POST">
+        <form action="/work-history/<%= month %>" method="POST">                                                <!--Form chọn tháng-->
             <label style="font-weight:bold" for="month">Chọn tháng:</label>
             <select class="form-select" name="month" id="month">
                 <option value="1" <%= month == 1 ? 'selected' : ''%>>Tháng 1</option>
@@ -25,7 +25,7 @@
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="btn" type="submit">Chọn</button>
         </form>
-        <div class="card">
+        <div class="card">                                                           <!--Thông tin quản lý và lương tháng được chọn (Mặc định là tháng hiện tại)-->
             <ul class="salary">
                 <% if (staff.managerId) { %> 
                     <li class="salary_items">Thông tin quản lý: </li>
@@ -40,9 +40,9 @@
                 <li class="salary_items">Lương: <%= (staff.salaryScale*3000000+((overTimeMonth - totalTimeShort)*200000)) %> đồng (Lương = salaryScale * 3000000 + (overTime - số giờ làm thiếu) * 200000)</li>
             </ul>
         </div>
-        <h1>Lịch sử làm việc:</h1>
-        <form action="/work-history" method="POST">
-            <label style="font-weight:bold" for="line">Số phiên làm việc hiển thị từng trang:</label>
+        <h1>Lịch sử làm việc:</h1>                                                                          <!--Lịch sử làm việc-->
+        <form action="/work-history" method="POST">                                                            <!--Form chọn số ngày làm việc hiển thị-->
+            <label style="font-weight:bold" for="line">Số ngày làm việc hiển thị từng trang:</label>
             <select name="line">
                 <option value="10" <% if (line == 10) { %>selected<% } %>>10</option>
                 <option value="20" <% if (line == 20) { %>selected<% } %>>20</option>
@@ -77,7 +77,7 @@
                     <% } %> 
             </div>
         <% } %>
-        <section class="pagination">
+        <section class="pagination">                                                                                    <!--Phân trang-->
             <% if (currentPage !== 1 && previousPage !== 1) { %> 
                 <a href="/work-history/?page=1">1</a>
             <% } %> 
