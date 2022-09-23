@@ -15,7 +15,7 @@ router.get('/month-check/:staffId', isAuth, isAdmin, adminController.getStaff); 
 
 router.post('/month-check/:staffId', isAuth, isAdmin, adminController.postStaff)                  //Router chọn tháng hiển thị cho trang xác nhận giờ làm
 
-router.post('/delete-work-session', isAuth, isAdmin, adminController.postDeleteWorkSession);      //Router xóa giờ làm của nhân viên hiển thị
+router.post('/delete-work-session/:workSessionId', isAuth, isAdmin, adminController.postDeleteWorkSession);      //Router xóa giờ làm của nhân viên hiển thị
 
 router.post('/confirm', isAuth, isAdmin, adminController.postConfirm);                            //Router xác nhận giờ làm tháng hiện tại của nhân viên hiển thị
 

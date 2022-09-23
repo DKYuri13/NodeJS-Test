@@ -27,8 +27,7 @@
                     <button class="btn" type="submit">Chọn</button>
                 </form>
             </div>
-            <hr>
-            <% if (staff.sessions.length > 0) { %>                                            <!--Hiển thị lịch sử làm việc của tháng được chọn (Mặc định là tháng hiện tại)-->
+            <hr>                                       <!--Hiển thị lịch sử làm việc của tháng được chọn (Mặc định là tháng hiện tại)-->
                 <% for (let session of staff.sessions) { %>
                     <% if (session.month == month) { %> 
                     <div class="card">
@@ -51,8 +50,8 @@
                             <li class="history_items">Tổng số giờ làm cả ngày: 
                                 (Số giờ làm thêm: , Số giờ thiếu: ) </li>
                             <% if (session.isApproved == false) { %> 
-                            <form action="/delete-work-session" method="POST">
-                                <input type="hidden" value="<%= session._id %>" name="workSessionId">
+                            <form action="/delete-work-session/<%= session._id %>" method="POST">
+                                <input type="hidden" value="<%= staff._id %>" name="staffId">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button class="btn" type="submit">Xóa</button>
                             </form>
@@ -61,7 +60,6 @@
                         </ul>
                     </div>
                 <% } %> 
-            <% } %>
             <% if (month == (dayNow.getMonth() + 1)) { %> 
                 <form action="/confirm" method="POST">                                                          <!--Nút xác nhận-->
                     <input type="hidden" name="staffId" value="<%= staff._id %>">

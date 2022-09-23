@@ -72,14 +72,14 @@ exports.postStaff = (req, res, next) => {                                   //RE
 }
 
 exports.postDeleteWorkSession = (req, res, next) => {                                   //XÓA PHIÊN LÀM VIỆC KHI NHẤN CHỌN XÓA
-  const staffId = req.staff._id
-  const workSessionId = req.body.workSessionId;
+  const staffId = req.body.staffId
+  const workSessionId = req.params.workSessionId;
   WorkSession.findById(workSessionId)
     .then(workSession => {
       if (!workSession) {
         return next(new Error('Work session not found.'));
       }
-      return WorkSession.deleteOne({ _id: workSessionId, staffId: req.staff._id })
+      return WorkSession.deleteOne({ _id: workSessionId, staffId: staffId})
     })
     .then(() => {
       const url = '/month-check/' + staffId;
